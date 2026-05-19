@@ -349,4 +349,21 @@ Risk 6: this translation is lossy (every unknown SQL error collapses to `'9999'`
 
 ---
 
+## 8. Missing-node summary
+
+Consolidated view of everything referenced by the supplied source that is **not** present in this repo:
+
+| Missing node | Referenced by | Severity | Mitigation in modernized code |
+| --- | --- | --- | --- |
+| `DATECONV-WS` (copybook) | `LABD20.pco:182` (`COPY DATECONV-WS.`) | HIGH — affects date validation correctness | Stubbed in [`migration/converted-code/python/labd20_loader.py`](../converted-code/python/labd20_loader.py) `check_cymd_dt` with `# PLACEHOLDER` marker; Risk 1. |
+| `DATECONV-PD` (copybook) | `LABD20.pco:531` (`COPY DATECONV-PD.`), referenced by `PERFORM CHECK-CYMD-DT` at `LABD20.pco:266-268` | HIGH | Same as above. |
+| `JV-COMMENT-IO` (subroutine) | Inferred from `DBIO.pco:112-114` placeholder + dispatch path `DBIO.pco:233-260` | MEDIUM — out of scope for the supplied callers (LABA05, LABD20 never dispatch to it) | Not exercised; SME confirmation required (Risk 4). |
+| `JV-TRAN-IO` (subroutine) | Inferred from `DBIO.pco:116-121` placeholder + dispatch path `DBIO.pco:233-260` | MEDIUM | Same. |
+| `TST-ACTIVITY-IO`, `TST-QUE-IO` (subroutines) | Inferred from `DBIO.pco:282-293` (`1200-CHECK-DB-SET-NAME` / `1300-SELECT-DUMMY`) | MEDIUM | Same. |
+| Any `*-CYMD-IO` Gregorian-path subroutine | `DBIO.pco:241-249, 251-254` (`DB-MISC = 'USE GREGORIAN'` branch, CHG-645) | LOW — no supplied caller sets `DB-MISC = 'USE GREGORIAN'` | Path is dead in the supplied codebase; SME confirmation required. |
+| Inserts into `JC_REJECTED_COMMENT_TBL` / `JC_APPLIED_COMMENT_TBL` | Only `COUNT(*)` references at `LABD20.pco:431-433, 441-443` | LOW — only end-of-job reporting affected | Reads only; SME to confirm where these tables are written by other jobs not in this repo. |
+| `rtsora` runtime, `TIMESTAMP.pl`, `GETGDGNO.pl` | `LABA05.pl:34, 9`; `LABD20-JV.pl:48, 9, 26, 53` | LOW — replaced wholesale in the Python pipeline | No direct equivalent needed (Python uses in-process startup, `datetime`, and explicit sequence management). |
+
+---
+
 > **Demo / prep — pending SME review.** Every claim above is grounded in `source/*` and `database/descriptions/*` at the file:line citations shown. Inferred behavior (e.g. dispatch paths not exercised by the supplied callers) is explicitly marked. Awaiting customer SME confirmation of: (a) DATECONV-WS/PD contents, (b) the full set of valid `DB-DMSREC-NAME` → `*-IO` handlers in the customer's compiled library, (c) any caller that uses the `DB-MISC = 'USE GREGORIAN'` Gregorian-date path, (d) whether `/tst/.ora*` files can be removed from production.
