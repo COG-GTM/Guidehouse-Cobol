@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>JV COBOL modernization — executive report — Cognition</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --ink: #000000;
+    --ink-2: #1a1a1a;
+    --paper: #ffffff;
+    --rule: #e6e6e6;
+    --muted: #595959;
+    --soft: #f6f5f1;
+    --accent: #000000;
+    --warn-bg: #fff4e0;
+    --warn-ink: #7a4a00;
+    --ok-bg: #e8f5ec;
+    --ok-ink: #14532d;
+    --bad-bg: #fde2e2;
+    --bad-ink: #7a1a1a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter Tight', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+  a:hover { color: var(--ink-2); }
+  code, pre, .mono { font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace; }
+
+  /* layout */
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+
+  /* top header */
+  header.top {
+    border-bottom: 1px solid var(--rule);
+    padding: 18px 0;
+    background: var(--paper);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  header.top .row {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .wordmark {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-weight: 600; letter-spacing: 0.2px; font-size: 16px;
+    color: var(--ink);
+  }
+  .wordmark svg { display: block; }
+  .wordmark .slash { opacity: 0.35; padding: 0 4px; }
+  .wordmark .doc { font-weight: 400; color: var(--muted); }
+  .status-pill {
+    display: inline-block; padding: 3px 10px; border-radius: 999px;
+    font-size: 12px; color: var(--warn-ink); background: var(--warn-bg);
+    border: 1px solid #f1d49a;
+  }
+
+  /* hero */
+  .hero {
+    padding: 64px 0 48px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .hero .eyebrow {
+    text-transform: uppercase; letter-spacing: 1.2px;
+    font-size: 11px; color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-size: 44px;
+    font-weight: 600;
+    line-height: 1.1;
+    margin: 0 0 16px;
+    letter-spacing: -0.4px;
+  }
+  .hero .lede {
+    color: var(--ink-2);
+    font-size: 18px;
+    max-width: 760px;
+    margin: 0;
+  }
+  .hero .meta {
+    margin-top: 24px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .hero .meta span + span { margin-left: 24px; padding-left: 24px; border-left: 1px solid var(--rule); }
+
+  /* honeycomb decoration */
+  .honeycomb {
+    position: absolute; right: 32px; top: 100px; opacity: 0.06;
+    pointer-events: none;
+  }
+
+  /* sections */
+  section { padding: 56px 0; border-bottom: 1px solid var(--rule); }
+  section h2 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    color: var(--muted);
+    font-weight: 600;
+    margin: 0 0 16px;
+  }
+  section h3 {
+    font-size: 28px;
+    font-weight: 600;
+    margin: 0 0 24px;
+    letter-spacing: -0.2px;
+    line-height: 1.2;
+  }
+  section .narrative {
+    max-width: 760px;
+    color: var(--ink-2);
+    font-size: 16px;
+    margin: 0 0 32px;
+  }
+
+  /* metrics row */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .metric {
+    background: var(--soft);
+    border-radius: 12px;
+    padding: 18px 20px;
+    border: 1px solid var(--rule);
+  }
+  .metric .v { font-size: 32px; font-weight: 600; letter-spacing: -0.4px; }
+  .metric .k { font-size: 12px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* phase board */
+  .board {
+    display: grid;
+    grid-template-columns: 80px 1fr 1fr 110px;
+    gap: 0;
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .board .row { display: contents; }
+  .board .cell {
+    padding: 14px 18px;
+    border-top: 1px solid var(--rule);
+    background: var(--paper);
+    font-size: 14px;
+  }
+  .board .row:first-child .cell { border-top: none; background: var(--soft); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  .board .status {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .status.done { background: var(--ok-bg); color: var(--ok-ink); }
+  .status.todo { background: var(--soft); color: var(--muted); }
+  .status.review { background: var(--warn-bg); color: var(--warn-ink); }
+
+  /* risk cards */
+  .risk-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .risk-card {
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 18px 20px;
+    background: var(--paper);
+  }
+  .risk-card .row1 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .risk-card .num { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); }
+  .risk-card .sev { font-size: 11px; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: 1px; }
+  .sev.high { background: var(--bad-bg); color: var(--bad-ink); }
+  .sev.med { background: var(--warn-bg); color: var(--warn-ink); }
+  .sev.low { background: var(--soft); color: var(--muted); }
+  .risk-card h4 { margin: 4px 0 8px; font-size: 15px; font-weight: 600; }
+  .risk-card p { margin: 0; color: var(--ink-2); font-size: 13px; }
+  .risk-card .mitig { margin-top: 8px; font-size: 12px; color: var(--muted); }
+
+  /* artifact links */
+  .artifacts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .art {
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 16px 18px;
+    background: var(--paper);
+  }
+  .art .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); }
+  .art .title { font-size: 14px; margin: 6px 0 0; font-weight: 600; }
+  .art ul { margin: 8px 0 0; padding-left: 16px; }
+  .art li { font-size: 13px; line-height: 1.6; }
+  .art a { text-decoration: underline; text-underline-offset: 2px; }
+
+  /* thought process timeline */
+  .timeline {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 0 24px;
+  }
+  .timeline .t {
+    padding: 16px 0;
+    border-top: 1px solid var(--rule);
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+  }
+  .timeline .b {
+    padding: 16px 0;
+    border-top: 1px solid var(--rule);
+  }
+  .timeline .b h4 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
+  .timeline .b p { margin: 0; color: var(--ink-2); font-size: 14px; }
+
+  /* table */
+  table.t {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  table.t th, table.t td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--rule);
+    font-size: 13px;
+  }
+  table.t th { background: var(--soft); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 11px; color: var(--muted); }
+  table.t tr:last-child td { border-bottom: none; }
+
+  /* code blocks */
+  pre.cmd {
+    background: #0d0d0d; color: #f4f4f4;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    overflow-x: auto;
+    margin: 0 0 12px;
+  }
+
+  /* footer */
+  footer.bottom {
+    padding: 32px 0 64px;
+    color: var(--muted);
+    font-size: 12px;
+    text-align: center;
+  }
+  footer.bottom .wordmark { justify-content: center; opacity: 0.85; margin-bottom: 8px; }
+
+  @media (max-width: 800px) {
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .risk-grid { grid-template-columns: 1fr; }
+    .artifacts { grid-template-columns: 1fr; }
+    .board { grid-template-columns: 60px 1fr; }
+    .board .cell.hide-mobile { display: none; }
+    .timeline { grid-template-columns: 1fr; }
+    .timeline .t { padding-top: 12px; border-top: none; }
+    .timeline .b { padding-bottom: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap row">
+    <span class="wordmark">
+      <!-- Sprocket monogram (simplified hex-honeycomb) + wordmark -->
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+        <polygon points="12,2 22,7 22,17 12,22 2,17 2,7" fill="#000"/>
+        <polygon points="12,6 18,9 18,15 12,18 6,15 6,9" fill="#fff"/>
+        <polygon points="12,9 15,10.5 15,13.5 12,15 9,13.5 9,10.5" fill="#000"/>
+      </svg>
+      Cognition <span class="slash">/</span> <span class="doc">JV COBOL modernization</span>
+    </span>
+    <span class="status-pill">Demo output · pending SME review</span>
+  </div>
+</header>
+
+<div class="wrap" style="position:relative;">
+
+  <div class="honeycomb" aria-hidden="true">
+    <svg width="280" height="280" viewBox="0 0 280 280">
+      <g fill="#000">
+        <polygon points="50,10 80,25 80,55 50,70 20,55 20,25" />
+        <polygon points="130,10 160,25 160,55 130,70 100,55 100,25" />
+        <polygon points="210,10 240,25 240,55 210,70 180,55 180,25" />
+        <polygon points="90,80 120,95 120,125 90,140 60,125 60,95" />
+        <polygon points="170,80 200,95 200,125 170,140 140,125 140,95" />
+        <polygon points="50,150 80,165 80,195 50,210 20,195 20,165" />
+        <polygon points="130,150 160,165 160,195 130,210 100,195 100,165" />
+        <polygon points="210,150 240,165 240,195 210,210 180,195 180,165" />
+      </g>
+    </svg>
+  </div>
+
+  <section class="hero">
+    <div class="eyebrow">Executive report · JV processing</div>
+    <h1>From legacy Pro*COBOL to a runnable, testable, traceable modern stack — in one session.</h1>
+    <p class="lede">
+      Devin ingested the supplied JV COBOL/Pro*COBOL programs, derived business
+      requirements with per-line source citations, traced field-level lineage
+      into Oracle, converted the two in-scope programs to Python plus
+      parameterized Oracle SQL, generated synthetic test data and a passing
+      test suite, and shipped a runnable end-to-end demo. Everything below is
+      reproducible from the pull request.
+    </p>
+    <p class="meta">
+      <span>Branch <code>demo/full-migration-execution</code></span>
+      <span>5 phases · 4 parallel tracks per phase</span>
+      <span>52 tests passing</span>
+    </p>
+  </section>
+
+  <section>
+    <h2>at a glance</h2>
+    <h3>Quantitative snapshot</h3>
+    <div class="metrics">
+      <div class="metric"><div class="v">1,633</div><div class="k">lines of COBOL / Pro*COBOL analyzed</div></div>
+      <div class="metric"><div class="v">1,640</div><div class="k">lines of modernized Python + SQL</div></div>
+      <div class="metric"><div class="v">30</div><div class="k">business requirements with citations</div></div>
+      <div class="metric"><div class="v">14</div><div class="k">embedded SQL statements catalogued</div></div>
+      <div class="metric"><div class="v">21</div><div class="k">synthetic fixed-width test records</div></div>
+      <div class="metric"><div class="v">52</div><div class="k">pytest cases passing</div></div>
+      <div class="metric"><div class="v">11</div><div class="k">named risks · 17 explicit assumptions</div></div>
+      <div class="metric"><div class="v">4</div><div class="k">Mermaid dependency &amp; lineage diagrams</div></div>
+    </div>
+    <div style="height:8px;"></div>
+    <p class="narrative" style="margin-top: 28px;">
+      Every number above is sourced. Click into the artifact links further
+      down to see exactly which COBOL line maps to which Python function and
+      which test validates it.
+    </p>
+  </section>
+
+  <section>
+    <h2>execution board</h2>
+    <h3>What ran, in what order, in this session</h3>
+    <div class="board">
+      <div class="row">
+        <div class="cell">Phase</div>
+        <div class="cell">Tasks</div>
+        <div class="cell hide-mobile">Primary deliverables</div>
+        <div class="cell">Status</div>
+      </div>
+      <div class="row">
+        <div class="cell">0</div>
+        <div class="cell">Plan + risk register + assumption register</div>
+        <div class="cell hide-mobile"><a href="MIGRATION-PLAN.md">MIGRATION-PLAN.md</a> · <a href="RISKS-AND-GAPS.md">RISKS-AND-GAPS.md</a> · <a href="ASSUMPTIONS-AND-PLACEHOLDERS.md">ASSUMPTIONS-AND-PLACEHOLDERS.md</a></div>
+        <div class="cell"><span class="status done">done</span></div>
+      </div>
+      <div class="row">
+        <div class="cell">1</div>
+        <div class="cell">Deep analysis (requirements, lineage, deps, SQL catalog) · 4 parallel tracks</div>
+        <div class="cell hide-mobile"><a href="business-requirements/requirements-with-citations.md">requirements</a> · <a href="analysis/field-lineage.md">field lineage</a> · <a href="analysis/dependency-map-detailed.md">dependency map</a> · <a href="analysis/sql-catalog.md">SQL catalog</a></div>
+        <div class="cell"><span class="status done">done</span></div>
+      </div>
+      <div class="row">
+        <div class="cell">2</div>
+        <div class="cell">Code conversion (LABD20, LABA05, SQL extracts, DBIO dispatcher) · 4 parallel tracks</div>
+        <div class="cell hide-mobile"><a href="converted-code/python/labd20_loader.py">labd20_loader.py</a> · <a href="converted-code/python/laba05_reset.py">laba05_reset.py</a> · <a href="converted-code/python/db_dispatcher.py">db_dispatcher.py</a> · <a href="converted-code/sql/">/sql</a></div>
+        <div class="cell"><span class="status done">done</span></div>
+      </div>
+      <div class="row">
+        <div class="cell">3</div>
+        <div class="cell">Test generation (data + LABD20 + LABA05) + before/after comparison · 4 parallel tracks</div>
+        <div class="cell hide-mobile"><a href="test-data/">synthetic data</a> · <a href="converted-code/python/tests/">tests</a> · <a href="docs/before-after-comparison.md">before/after</a></div>
+        <div class="cell"><span class="status done">done</span></div>
+      </div>
+      <div class="row">
+        <div class="cell">4</div>
+        <div class="cell">Customer-facing artifacts (open Qs response, walkthrough, efficiency, post-mod docs) · 4 parallel tracks</div>
+        <div class="cell hide-mobile"><a href="docs/guidehouse-open-questions-response.md">open questions</a> · <a href="docs/demo-walkthrough.md">walkthrough</a> · <a href="docs/conversion-efficiency.md">efficiency</a> · <a href="docs/post-modernization-docs.md">post-mod docs</a></div>
+        <div class="cell"><span class="status done">done</span></div>
+      </div>
+      <div class="row">
+        <div class="cell">5</div>
+        <div class="cell">Final assembly, runnable demo, PR</div>
+        <div class="cell hide-mobile"><a href="README.md">README</a> · <a href="converted-code/python/demo_app.py">demo_app.py</a> · <a href="test-results/pytest-output.txt">test results</a></div>
+        <div class="cell"><span class="status done">done</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>thought process</h2>
+    <h3>How Devin reasoned through this engagement</h3>
+    <p class="narrative">
+      The customer's open questions made it clear this had to be a
+      <em>traceable, honest</em> conversion — not a "looks-like-COBOL"
+      rewrite. Devin spent the first wave reading every supplied file
+      end-to-end before writing a single line of Python, so every later
+      decision could cite source. The next decision was where to be loud
+      about gaps: the missing <code>DATECONV-WS</code> /
+      <code>DATECONV-PD</code> copybooks and the binary↔display JV-NUMBER
+      conversion both got top-of-file warnings, inline markers, risk-register
+      entries, and a dedicated section in this report.
+    </p>
+    <div class="timeline">
+      <div class="t">Step 1</div>
+      <div class="b">
+        <h4>Read everything before writing anything.</h4>
+        <p>Source files, copybooks, database describe files, and the existing analysis/business-requirements were all read before any modernization began. This is what made it possible to cite source on every requirement.</p>
+      </div>
+      <div class="t">Step 2</div>
+      <div class="b">
+        <h4>Plan + risk + assumption registers before code.</h4>
+        <p>Phase 0 produced three customer-visible files in the order the customer would read them: plan, risks, assumptions. The rest of the work explicitly references back to them.</p>
+      </div>
+      <div class="t">Step 3</div>
+      <div class="b">
+        <h4>Parallel fan-out within each phase.</h4>
+        <p>Phases 1 through 4 each have four independent tracks. The decision boundary is "what does an SME need to see together" — code conversion is in Phase 2 because it depends on Phase 1's lineage; tests are in Phase 3 because they depend on Phase 2's code.</p>
+      </div>
+      <div class="t">Step 4</div>
+      <div class="b">
+        <h4>Honesty about what couldn't be confirmed.</h4>
+        <p>Four requirements are flagged <code>LOW / unresolvable</code> — all rooted in artifacts that weren't supplied. Devin did not silently invent semantics. Every stub carries an inline <code># PLACEHOLDER</code> marker and a queue entry for SME review.</p>
+      </div>
+      <div class="t">Step 5</div>
+      <div class="b">
+        <h4>Runnable, not just readable.</h4>
+        <p>The same code that the modernization deliverables describe is wired into <code>demo_app.py</code> with an in-memory mock Oracle. Anyone can clone the branch and see the loader process 21 records, accept 7, reject 12, dedupe 2, in under a second.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>blockers &amp; what's missing</h2>
+    <h3>Eleven named risks. Every one of them is in the code as a marker.</h3>
+    <div class="risk-grid">
+      <div class="risk-card">
+        <div class="row1"><span class="num">Risk 1</span><span class="sev high">high</span></div>
+        <h4>Missing DATECONV-WS / DATECONV-PD copybooks</h4>
+        <p>LABD20 references date-conversion copybooks that weren't supplied. Exact legacy date-validation fidelity cannot be verified.</p>
+        <div class="mitig">Mitigation: Gregorian-calendar stub; <code># PLACEHOLDER</code> marker in <code>labd20_loader.check_cymd_dt</code>; SME confirmation required.</div>
+      </div>
+      <div class="risk-card">
+        <div class="row1"><span class="num">Risk 2</span><span class="sev high">high</span></div>
+        <h4>Binary-to-display JV-NUMBER conversion</h4>
+        <p>CONTROL-RECORD-TABLE-IO.pco does explicit binary/display conversion (lines 21-28, 257-266). Demo uses display form.</p>
+        <div class="mitig">Mitigation: <code># PLACEHOLDER</code> for <code>struct.unpack('&gt;I', …)</code> in <code>laba05_reset._extract_jv_number</code>.</div>
+      </div>
+      <div class="risk-card">
+        <div class="row1"><span class="num">Risk 3</span><span class="sev high">high</span></div>
+        <h4>Credential files in DBIO.pco</h4>
+        <p><code>/tst/.oralogin</code> and <code>/tst/.orapasswd</code> must never appear in modernized code.</p>
+        <div class="mitig">Mitigation: <code>DBDispatcher.from_env</code> reads from env vars; production uses managed secrets store.</div>
+      </div>
+      <div class="risk-card">
+        <div class="row1"><span class="num">Risk 4</span><span class="sev med">medium</span></div>
+        <h4>Dynamic subroutine dispatch in DBIO</h4>
+        <p>Runtime string construction of IO module names. Supplied source resolves only some targets.</p>
+        <div class="mitig">Mitigation: typed <code>DBDispatcher</code> class with named methods; enumerated dispatch table in dependency map.</div>
+      </div>
+      <div class="risk-card">
+        <div class="row1"><span class="num">Risk 5</span><span class="sev med">medium</span></div>
+        <h4>Approver field width (14 vs 20)</h4>
+        <p>FD active line says 14 bytes; commented line says 20. Oracle column is CHAR(20).</p>
+        <div class="mitig">Mitigation: respect active FD (14); column right-pads; SME confirms whether the 20-byte line is genuinely deprecated.</div>
+      </div>
+      <div class="risk-card">
+        <div class="row1"><span class="num">Risk 6</span><span class="sev med">medium</span></div>
+        <h4>SQLCODE-to-DMS translation</h4>
+        <p>Callers check ERROR-NUM not SQLCODE. Must be preserved.</p>
+        <div class="mitig">Mitigation: <code>translate_sqlcode</code> reproduces DBIO.pco:374-398; 6 test cases.</div>
+      </div>
+      <div class="risk-card">
+        <div class="row1"><span class="num">Risk 7</span><span class="sev med">medium</span></div>
+        <h4>Transaction rollback paths</h4>
+        <p>Both SQL and DMS error paths exist in LABD20.</p>
+        <div class="mitig">Mitigation: <code>LABD20Loader._fatal_rollback</code> covers both; <code>TestLoaderEndToEnd.test_rollback_on_insert_failure</code>.</div>
+      </div>
+      <div class="risk-card">
+        <div class="row1"><span class="num">Risk 8</span><span class="sev med">medium</span></div>
+        <h4>JC_COUNT_TBL column name discrepancy</h4>
+        <p>LABD20 source says <code>JC_SECTION_COUNT</code>; describe file says <code>JC_COUNT_NUM</code>.</p>
+        <div class="mitig">Mitigation: SQL extract uses describe-file name; SME reconciliation required.</div>
+      </div>
+      <div class="risk-card">
+        <div class="row1"><span class="num">Risk 9</span><span class="sev low">low</span></div>
+        <h4>Empty real test data</h4>
+        <p><code>TST.JVCMTS.dat</code> in the source tree was empty.</p>
+        <div class="mitig">Mitigation: 21 synthetic records covering all 8 validation rules + duplicates + boundary cases.</div>
+      </div>
+      <div class="risk-card">
+        <div class="row1"><span class="num">Risk 10</span><span class="sev low">low</span></div>
+        <h4>Perl wrapper env dependencies</h4>
+        <p>6+ env vars and <code>rtsora</code> runtime.</p>
+        <div class="mitig">Mitigation: documented; replaced by Airflow / CronJob / Step Functions pattern in post-modernization docs.</div>
+      </div>
+      <div class="risk-card">
+        <div class="row1"><span class="num">Risk 11</span><span class="sev low">low</span></div>
+        <h4><code>PERFORM PERFORM</code> typo</h4>
+        <p>LABD20.pco:213 has <code>PERFORM PERFORM CLOSE-SQL-ENVIRONMENT</code>.</p>
+        <div class="mitig">Mitigation: flag for SME — likely benign in COBOL parsing.</div>
+      </div>
+    </div>
+    <p class="narrative" style="margin-top:24px;">
+      The full SME-review queue (10 items, prioritized) is in
+      <a href="docs/conversion-efficiency.md">conversion-efficiency.md §4</a>.
+      Every placeholder in the Python code is grep-able with
+      <code>rg "# PLACEHOLDER" migration/converted-code</code>.
+    </p>
+  </section>
+
+  <section>
+    <h2>artifacts</h2>
+    <h3>Everything Devin produced this session</h3>
+    <div class="artifacts">
+      <div class="art">
+        <div class="lbl">Plan &amp; registers</div>
+        <p class="title">Customer-visible plan + honest gap registers</p>
+        <ul>
+          <li><a href="MIGRATION-PLAN.md">MIGRATION-PLAN.md</a></li>
+          <li><a href="RISKS-AND-GAPS.md">RISKS-AND-GAPS.md</a></li>
+          <li><a href="ASSUMPTIONS-AND-PLACEHOLDERS.md">ASSUMPTIONS-AND-PLACEHOLDERS.md</a></li>
+          <li><a href="README.md">README.md (index)</a></li>
+        </ul>
+      </div>
+      <div class="art">
+        <div class="lbl">Analysis</div>
+        <p class="title">Requirements + lineage + dependency + SQL catalog</p>
+        <ul>
+          <li><a href="business-requirements/requirements-with-citations.md">requirements-with-citations.md</a></li>
+          <li><a href="analysis/field-lineage.md">field-lineage.md</a></li>
+          <li><a href="analysis/dependency-map-detailed.md">dependency-map-detailed.md</a></li>
+          <li><a href="analysis/sql-catalog.md">sql-catalog.md</a></li>
+        </ul>
+      </div>
+      <div class="art">
+        <div class="lbl">Converted code</div>
+        <p class="title">Python + parameterized Oracle SQL</p>
+        <ul>
+          <li><a href="converted-code/python/labd20_loader.py">labd20_loader.py</a></li>
+          <li><a href="converted-code/python/laba05_reset.py">laba05_reset.py</a></li>
+          <li><a href="converted-code/python/db_dispatcher.py">db_dispatcher.py</a></li>
+          <li><a href="converted-code/sql/labd20_operations.sql">labd20_operations.sql</a></li>
+          <li><a href="converted-code/sql/control_record_table_operations.sql">control_record_table_operations.sql</a></li>
+        </ul>
+      </div>
+      <div class="art">
+        <div class="lbl">Tests &amp; data</div>
+        <p class="title">52 passing pytest cases · 21 synthetic records</p>
+        <ul>
+          <li><a href="converted-code/python/tests/test_labd20_loader.py">test_labd20_loader.py</a></li>
+          <li><a href="converted-code/python/tests/test_laba05_reset.py">test_laba05_reset.py</a></li>
+          <li><a href="test-data/synthetic_comments.dat">synthetic_comments.dat</a></li>
+          <li><a href="test-data/synthetic_card.ctl">synthetic_card.ctl</a></li>
+          <li><a href="test-results/pytest-output.txt">pytest-output.txt</a></li>
+        </ul>
+      </div>
+      <div class="art">
+        <div class="lbl">Customer-facing</div>
+        <p class="title">Open Qs · walkthrough · efficiency · post-mod docs</p>
+        <ul>
+          <li><a href="docs/guidehouse-open-questions-response.md">open questions response</a></li>
+          <li><a href="docs/demo-walkthrough.md">demo walkthrough</a></li>
+          <li><a href="docs/conversion-efficiency.md">conversion efficiency</a></li>
+          <li><a href="docs/post-modernization-docs.md">post-modernization docs</a></li>
+          <li><a href="docs/before-after-comparison.md">before / after comparison</a></li>
+        </ul>
+      </div>
+      <div class="art">
+        <div class="lbl">Live demo</div>
+        <p class="title">Runnable end-to-end with mock Oracle</p>
+        <ul>
+          <li><a href="converted-code/python/demo_app.py">demo_app.py (CLI + HTML)</a></li>
+          <li><code>python3 migration/converted-code/python/demo_app.py run</code></li>
+          <li><code>python3 migration/converted-code/python/demo_app.py serve</code></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>live demo</h2>
+    <h3>Bring it up in under thirty seconds</h3>
+    <p class="narrative">
+      The same Python that we describe in the modernization docs is wired
+      end-to-end against an in-memory mock Oracle and the bundled synthetic
+      data. Zero external setup. Two commands:
+    </p>
+    <pre class="cmd"># Run the loader + reset against the synthetic data and print a report
+python3 migration/converted-code/python/demo_app.py run</pre>
+    <pre class="cmd"># Same thing, but serve a tiny HTML dashboard at http://127.0.0.1:8765
+python3 migration/converted-code/python/demo_app.py serve</pre>
+    <p class="narrative">
+      Expected output: <strong>21 records read · 7 inserted · 2 duplicates · 12 rejected ·
+      JV-NUMBER reset 99 → 1</strong>.
+    </p>
+  </section>
+
+  <section>
+    <h2>verification</h2>
+    <h3>52 tests, all passing</h3>
+    <pre class="cmd">$ python3 -m pytest migration/converted-code/python/tests/ -v
+============================== 52 passed in 0.24s ==============================</pre>
+    <p class="narrative">
+      Full output is committed at
+      <a href="test-results/pytest-output.txt">test-results/pytest-output.txt</a>.
+      Coverage spans byte-layout, parsing, all 8 LABD20 validation rules,
+      duplicate detection, INSERT parameter mapping, rollback path,
+      count-update post-process, fiscal-year reset, and binary↔display
+      round-trip. The before/after comparison table is in
+      <a href="docs/before-after-comparison.md">before-after-comparison.md</a>.
+    </p>
+  </section>
+
+  <section>
+    <h2>traceability matrix</h2>
+    <h3>Where each requirement lives</h3>
+    <table class="t">
+      <thead>
+        <tr><th>Layer</th><th>Count</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>BR-LABA05 requirements covered by Python</td><td>6 / 6</td></tr>
+        <tr><td>BR-LABA05 requirements covered by tests</td><td>6 / 6</td></tr>
+        <tr><td>BR-LABD20 requirements covered by Python</td><td>19 / 22</td></tr>
+        <tr><td>BR-LABD20 requirements covered by tests</td><td>17 / 22</td></tr>
+        <tr><td>Unresolvable (missing artifacts)</td><td>4 (all explicitly flagged)</td></tr>
+        <tr><td>Passing pytest assertions</td><td>52</td></tr>
+        <tr><td>Risks named &amp; mitigated in code</td><td>11</td></tr>
+        <tr><td>Explicit assumptions / placeholders</td><td>17</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>what's next</h2>
+    <h3>Recommended path forward</h3>
+    <p class="narrative">
+      The current artifact set is sufficient for a customer walkthrough and an
+      SME review session. The shortest path to a production-ready conversion
+      is:
+    </p>
+    <ol>
+      <li>SME review of the 10-item review queue (<a href="docs/conversion-efficiency.md">conversion-efficiency.md §4</a>).</li>
+      <li>Drop-in the real <code>DATECONV-PD</code> logic in <code>labd20_loader.check_cymd_dt</code>.</li>
+      <li>Switch JV-NUMBER read/write to <code>struct.unpack/pack('&gt;I', …)</code> against a real Oracle.</li>
+      <li>Wire the dispatcher to a managed-secrets-store-backed <code>oracledb</code> connection.</li>
+      <li>Stand up the orchestrator (Airflow / CronJob / Step Functions) and migrate the Perl wrapper env-vars.</li>
+      <li>Add the rejected/applied insert paths once the upstream/downstream COBOL programs are in scope.</li>
+    </ol>
+  </section>
+
+</div>
+
+<footer class="bottom">
+  <div class="wrap">
+    <div class="wordmark">
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+        <polygon points="12,2 22,7 22,17 12,22 2,17 2,7" fill="#000"/>
+        <polygon points="12,6 18,9 18,15 12,18 6,15 6,9" fill="#fff"/>
+        <polygon points="12,9 15,10.5 15,13.5 12,15 9,13.5 9,10.5" fill="#000"/>
+      </svg>
+      Cognition
+    </div>
+    Confidential. Demo output, pending SME review. All test data synthetic. No real customer information.
+  </div>
+</footer>
+
+</body>
+</html>

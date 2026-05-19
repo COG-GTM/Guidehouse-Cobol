@@ -2,6 +2,13 @@
 
 Private working repository for the Guidehouse/VA COBOL modernization follow-up demo.
 
+> **Generated migration output:** see [`migration/`](migration/) for the full
+> end-to-end deliverable — plan, risk register, business requirements with
+> citations, field lineage, dependency map, SQL catalog, modernized Python +
+> Oracle SQL, synthetic test data, 52 passing pytest cases, customer-facing
+> docs, an executive HTML report, and a runnable demo entrypoint
+> (`migration/converted-code/python/demo_app.py`).
+
 ## Demo Objective
 
 Guidehouse requested a targeted demo using the supplied COBOL assets to show that Devin/Windsurf can:
