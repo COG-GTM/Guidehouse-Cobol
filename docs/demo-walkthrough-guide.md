@@ -1,6 +1,6 @@
 # Demo walkthrough — end-to-end guide
 
-> **Audience:** Jake, presenting the JV COBOL modernization demo to federal buyers (Guidehouse / VA / IC).
+> **Audience:** Jake, presenting the JV COBOL modernization demo to federal buyers (Guidehouse / SBA / IC).
 > **Format:** what to open, in what order, with talking points and an honest assessment of what is live vs. static.
 > **Length:** designed for a 30–45 minute session; can be compressed to 15 minutes by skipping the Python live app section.
 >

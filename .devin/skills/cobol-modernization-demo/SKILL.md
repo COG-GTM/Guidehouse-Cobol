@@ -1,6 +1,6 @@
 ---
 name: cobol-modernization-demo
-description: Use for Guidehouse/VA COBOL modernization demo tasks involving COBOL/Pro*COBOL analysis, requirements extraction, lineage, SQL/Python conversion, and customer demo artifacts.
+description: Use for Guidehouse/SBA COBOL modernization demo tasks involving COBOL/Pro*COBOL analysis, requirements extraction, lineage, SQL/Python conversion, and customer demo artifacts.
 ---
 
 # COBOL Modernization Demo Skill

@@ -1,6 +1,6 @@
 # Agent Instructions
 
-This repo is a private Guidehouse/VA COBOL modernization demo workspace.
+This repo is a private Guidehouse/SBA COBOL modernization demo workspace.
 
 ## Mission
 

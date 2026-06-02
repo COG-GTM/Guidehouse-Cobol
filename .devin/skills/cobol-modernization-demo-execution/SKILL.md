@@ -1,6 +1,6 @@
 ---
 name: cobol-modernization-demo-execution
-description: Use during a live or rehearsed walkthrough of the JV COBOL modernization demo for Guidehouse/VA (executive report, live dashboard, parity console, CLI proof). Covers the exact run order, talk-track guardrails, honest-framing language, and the four artifacts that must reconcile.
+description: Use during a live or rehearsed walkthrough of the JV COBOL modernization demo for Guidehouse/SBA (executive report, live dashboard, parity console, CLI proof). Covers the exact run order, talk-track guardrails, honest-framing language, and the four artifacts that must reconcile.
 ---
 
 # COBOL modernization demo — execution skill

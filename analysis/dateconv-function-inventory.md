@@ -112,7 +112,7 @@ Codes **29** and **30** are skipped in `DATECONV.cbl` `000-SELECT` — no entry 
 | `LABD20.pco:266` (`MOVE TST123-COMMENT-DT TO FROM-CYMD-DT`) → `LABD20.pco:267` (`PERFORM CHECK-CYMD-DT`) | `CHECK-CYMD-DT` (`DATESUB-FUNC = 1`) | Validates that the 8-digit `TST123-COMMENT-DT` field is a real Gregorian date; sets `DATE-IS-VALID` / `DATE-ERR`. If `DATE-ERR`, `LABD20` flags the record with `WS-TST123-RECORD-FLAG = 1`. |
 
 That said, the other 39 paragraphs are still valuable because:
-- They expose a **complete** subsystem to any future modernization (other VA programs may use the same `DATECONV` library).
+- They expose a **complete** subsystem to any future modernization (other SBA programs may use the same `DATECONV` library).
 - They allow a **byte-for-byte** runtime parity diff to validate the modernization story end-to-end against the full surface of the customer's subprogram, not just the single path `LABD20` exercises.
 - They strengthen the demo claim that Cognition can ingest a complete subsystem and produce parity across every entry point, not just the ones the calling program happens to hit.
 

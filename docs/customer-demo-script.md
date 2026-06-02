@@ -1,4 +1,4 @@
-# Guidehouse Customer Demo Script — VA COBOL Modernization
+# Guidehouse Customer Demo Script — SBA COBOL Modernization
 
 > Demo / prep output. ~45–60 minute walkthrough of the supplied JV comment-
 > processing programs (`LABA05`, `LABD20`) and how Devin ingests, analyzes,
@@ -39,7 +39,7 @@ explicit confidence and risk markers for anything missing.
 
 **What we are not doing.** We are not pushing a finished, unsupervised
 migration. The deliverables are designed for an "expert-in-the-loop"
-workflow where COBOL SMEs at Guidehouse / VA review high-signal diffs and
+workflow where COBOL SMEs at Guidehouse / SBA review high-signal diffs and
 acceptance tests rather than line-by-line code reads.
 
 **Customer artifacts in this session.**

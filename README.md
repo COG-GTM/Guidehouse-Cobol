@@ -1,6 +1,6 @@
 # Guidehouse COBOL Modernization Demo
 
-Private working repository for the Guidehouse/VA COBOL modernization follow-up demo.
+Private working repository for the Guidehouse/SBA COBOL modernization follow-up demo.
 
 > **Generated migration output:** see [`migration/`](migration/) for the full
 > end-to-end deliverable — plan, risk register, business requirements with
@@ -37,7 +37,7 @@ Guidehouse requested a targeted demo using the supplied COBOL assets to show tha
 
 ## Source Snapshot
 
-The supplied assets center on a VA JV comment-processing workflow:
+The supplied assets center on a SBA JV comment-processing workflow:
 
 - `LABA05` resets `JV-NUMBER` on `JV-CONTROL-REC` to `1` at fiscal-year rollover.
 - `LABD20` reads comment records from a daily comment file, validates required fields, checks for duplicates, inserts accepted records into `JC_SUBMITTED_COMMENT_TBL`, and updates `JC_COUNT_TBL`.
