@@ -1,4 +1,4 @@
-You are working in the private GitHub repo COG-GTM/Guidehouse-Cobol for the Guidehouse/VA COBOL modernization demo.
+You are working in the private GitHub repo COG-GTM/Guidehouse-Cobol for the Guidehouse/SBA COBOL modernization demo.
 
 Start read-only. Do not modify files yet.
 

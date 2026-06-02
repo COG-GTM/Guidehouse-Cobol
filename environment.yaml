@@ -10,7 +10,7 @@ maintenance: |
 knowledge:
   - name: repository_overview
     contents: |
-      This private repo contains Guidehouse-provided COBOL modernization demo assets for a VA JV comment workflow.
+      This private repo contains Guidehouse-provided COBOL modernization demo assets for a SBA JV comment workflow.
       Primary source files:
       - source/cobol/LABA05.cbl: fiscal-year JV control-number reset.
       - source/procobol/LABD20.pco: fixed-width JV comment-file ingestion into Oracle tables.
@@ -30,5 +30,5 @@ knowledge:
       Preserve customer-supplied source files unless explicitly asked to transform them.
       DATECONV closure (2026-05-21 customer follow-up shipment): DATECONV-WS, DATECONV-PD, DATECONV.cbl, and JDN helpers (JDN-CONSTANTS-WS, JDN-PACKET-WS, JDN-RECORD-WS, JDN-RECORD-ACCESS) are now under source/copybooks/ and source/cobol/. Risk 1 CLOSED, Assumption A-1 retired, BR-LABD20-006 LOW->HIGH. See analysis/dateconv-function-inventory.md.
       Customer artifacts under source/ are the frozen "before" state; modernized port lives under migration/converted-code/. Do not edit source/ copybooks.
-      Treat generated conversion output as demo code until reviewed by a COBOL/VA SME.
+      Treat generated conversion output as demo code until reviewed by a COBOL/SBA SME.
       Use parameterized SQL and managed secrets in any modernization examples.

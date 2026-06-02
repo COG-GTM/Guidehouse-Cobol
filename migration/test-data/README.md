@@ -1,7 +1,7 @@
 # Synthetic test data
 
 **Status:** Demo output. All data here is synthetic and contains NO real
-VA/customer information.
+SBA/customer information.
 
 ## Files
 

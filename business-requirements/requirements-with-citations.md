@@ -6,7 +6,7 @@
 
 ## Scope
 
-This document refines the initial derived requirements for the two VA Journal-Voucher
+This document refines the initial derived requirements for the two SBA Journal-Voucher
 (JV) comment-processing programs supplied by Guidehouse:
 
 - `LABA05` — fiscal-year reset of the JV control number (`source/cobol/LABA05.cbl`)
@@ -216,7 +216,7 @@ they are derived directly from the supplied source. Date-validation behavior
 (BR-LABD20-007) is **Medium confidence** until either the missing copybooks are
 provided or a substitute calendar-date validator (e.g. `EXTRACT` /
 `TO_DATE` round-trip in Oracle, or `datetime.date` in Python) is approved by a
-Guidehouse / VA SME.~~
+Guidehouse / SBA SME.~~
 
 > **Resolved 2026-05-21:** All requirements are now **High confidence**. The pre-shipment Medium-confidence rating on date validation no longer applies.
 
