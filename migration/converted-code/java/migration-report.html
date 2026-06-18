@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<!-- STATUS: Demo output — pending SME review -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LABA05.cbl → Java 21 Migration Report</title>
+    <style>
+        :root {
+            --primary: #1a365d;
+            --accent: #2c5282;
+            --bg-alt: #f7fafc;
+            --border: #e2e8f0;
+            --code-bg: #1a202c;
+            --code-fg: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        h1 { color: var(--primary); font-size: 1.8rem; margin-bottom: 0.5rem; }
+        h2 { color: var(--accent); font-size: 1.4rem; margin: 1.5rem 0 0.75rem; border-bottom: 2px solid var(--border); padding-bottom: 0.25rem; }
+        h3 { color: var(--primary); font-size: 1.1rem; margin: 1rem 0 0.5rem; }
+        .header { text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 3px solid var(--primary); }
+        .header .meta { color: #718096; font-size: 0.9rem; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+        th { background: var(--primary); color: white; padding: 0.6rem 0.75rem; text-align: left; }
+        td { padding: 0.5rem 0.75rem; border: 1px solid var(--border); vertical-align: top; }
+        tr:nth-child(even) td { background: var(--bg-alt); }
+        pre, code { font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; }
+        pre { background: var(--code-bg); color: var(--code-fg); padding: 1rem; border-radius: 4px; overflow-x: auto; font-size: 0.8rem; margin: 0.5rem 0; }
+        code { background: #edf2f7; padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 0.85em; }
+        details { margin: 0.75rem 0; border: 1px solid var(--border); border-radius: 4px; }
+        summary { cursor: pointer; padding: 0.75rem 1rem; background: var(--bg-alt); font-weight: 600; }
+        details[open] summary { border-bottom: 1px solid var(--border); }
+        .details-content { padding: 1rem; }
+        .risk-high { color: #c53030; font-weight: 600; }
+        .risk-medium { color: #d69e2e; font-weight: 600; }
+        .risk-closed { color: #38a169; font-weight: 600; }
+        .status-badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 3px; font-size: 0.8rem; font-weight: 600; }
+        .badge-pass { background: #c6f6d5; color: #22543d; }
+        .badge-demo { background: #fefcbf; color: #744210; }
+        @media print {
+            body { max-width: 100%; padding: 1rem; }
+            details { break-inside: avoid; }
+            details[open] { break-inside: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>LABA05.cbl → Java 21 Migration Report</h1>
+    <p class="meta">
+        Source: <code>source/cobol/LABA05.cbl</code> (285 lines) |
+        Target: <code>migration/converted-code/java/</code> |
+        Generated: 2026-06-18 |
+        Repo: COG-GTM/Guidehouse-Cobol
+    </p>
+    <p class="meta"><span class="status-badge badge-demo">Demo output — pending SME review</span></p>
+</div>
+
+<!-- Section 1: Executive Summary -->
+<h2>1. Executive summary</h2>
+<table>
+    <tr><th>Metric</th><th>COBOL (source)</th><th>Java 21 (target)</th></tr>
+    <tr><td>Program lines</td><td>285 (LABA05.cbl)</td><td>~165 (Laba05Reset.java)</td></tr>
+    <tr><td>Supporting files</td><td>5 copybooks + 2 Pro*COBOL modules</td><td>4 supporting classes</td></tr>
+    <tr><td>Total source files</td><td>8</td><td>5 Java sources</td></tr>
+    <tr><td>Test cases</td><td>N/A (manual)</td><td>12 JUnit 5 tests (2 test classes)</td></tr>
+    <tr><td>Language level</td><td>COBOL-85 + Pro*COBOL</td><td>Java 21 (records, sealed, switch expressions)</td></tr>
+    <tr><td>Database</td><td>Oracle via DBIO dispatcher</td><td>JDBC (H2 for test, Oracle for prod)</td></tr>
+</table>
+<p><strong>Purpose:</strong> LABA05 is a batch utility that resets <code>JV-NUMBER</code> to 1 on the
+<code>JV-CONTROL-REC</code> row in <code>CONTROL_RECORD_TABLE</code> at the start of each fiscal year.</p>
+
+<!-- Section 2: Side-by-Side Code Comparison -->
+<h2>2. Side-by-side code comparison</h2>
+
+<details open>
+<summary>COBOL paragraph → Java method mapping</summary>
+<div class="details-content">
+<table>
+    <tr><th>COBOL paragraph</th><th>Lines</th><th>Java method / class</th><th>Notes</th></tr>
+    <tr>
+        <td>PROCEDURE DIVISION (CONNECT)</td>
+        <td>67-85</td>
+        <td><code>Laba05Reset.run()</code> — connection passed in via <code>DbDispatcher</code></td>
+        <td>Connection establishment externalized (Risk 3)</td>
+    </tr>
+    <tr>
+        <td><code>FETCH-CTRL-REC</code></td>
+        <td>150-174</td>
+        <td><code>Laba05Reset.fetchControlRecord()</code></td>
+        <td>SELECT from CONTROL_RECORD_TABLE</td>
+    </tr>
+    <tr>
+        <td><code>MODIFY-CTRL-REC</code></td>
+        <td>176-205</td>
+        <td><code>Laba05Reset.modifyControlRecord()</code></td>
+        <td>UPDATE with new JV-NUMBER</td>
+    </tr>
+    <tr>
+        <td><code>CLOSE-DEPART-DB</code></td>
+        <td>120-140</td>
+        <td><code>DbDispatcher.commit()</code></td>
+        <td>COMMIT transaction</td>
+    </tr>
+    <tr>
+        <td><code>DML-ROLLBACK-PARA</code></td>
+        <td>207-228</td>
+        <td><code>DbDispatcher.rollback()</code></td>
+        <td>ROLLBACK on error</td>
+    </tr>
+    <tr>
+        <td><code>9999-DISPLAY-REC</code></td>
+        <td>274-283</td>
+        <td><code>Laba05Reset.displayRecord()</code></td>
+        <td>SLF4J logging replaces DISPLAY UPON PRINTER</td>
+    </tr>
+    <tr>
+        <td><code>COPY JV-CONTROL-REC</code></td>
+        <td>cpy:1-9</td>
+        <td><code>JvControlRecord.java</code></td>
+        <td>Java record with fromControlRecordData/toControlRecordData</td>
+    </tr>
+    <tr>
+        <td><code>COPY DBVAR</code> / <code>DMCA</code> / <code>DMCAERR</code></td>
+        <td>various</td>
+        <td><code>DbDispatcher.java</code> / <code>DmsErrorCodes.java</code></td>
+        <td>JDBC wrapper + SQLCODE→DMS translation</td>
+    </tr>
+</table>
+</div>
+</details>
+
+<details>
+<summary>CONNECT (LABA05.cbl:67-85) → Laba05Reset.run() initialization</summary>
+<div class="details-content">
+<table style="table-layout:fixed;"><tr><td style="width:50%">
+<pre>
+MIGRTN MOVE 'CONNECT' TO DB-FUNCTION
+MIGRTN INITIALIZE DB-FUNCTION-TYPE,
+         DB-TABLE-NAME, DB-DATA
+MIGRTN CALL 'DBIO' USING DB-DMSREC-NAME
+         DB-FUNCTION DB-FUNCTION-TYPE
+         DB-SET-NAME DB-DATA DB-ROWID
+         DB-MISC DB-RETURN-CODE DB-MESSAGE
+MIGRTN PERFORM DMCA-ERRFLDS THRU
+         DMCA-ERRFLDS-EXIT
+MIGRTN IF NOT DB-OK
+         DISPLAY '*** PROGRAM ABORTED ***'
+         MOVE 99 TO RETURN-CODE
+         STOP RUN
+       END-IF.
+</pre>
+</td><td style="width:50%">
+<pre>
+// Connection externalized — passed via
+// DbDispatcher constructor (Risk 3 mitigation).
+// The caller provides a live JDBC Connection:
+//   var conn = DriverManager.getConnection(url);
+//   var dispatcher = new DbDispatcher(conn);
+//   Laba05Reset.run(dispatcher);
+</pre>
+</td></tr></table>
+</div>
+</details>
+
+<details>
+<summary>FETCH-CTRL-REC (LABA05.cbl:150-174) → fetchControlRecord()</summary>
+<div class="details-content">
+<table style="table-layout:fixed;"><tr><td style="width:50%">
+<pre>
+FETCH-CTRL-REC.
+  MOVE 'JV-CONTROL-REC' TO DB-DMSREC-NAME
+  MOVE 'SELECT'          TO DB-FUNCTION
+  MOVE 'FETCH'           TO DB-FUNCTION-TYPE
+  INITIALIZE                DB-SET-NAME
+  MOVE JV-CONTROL-REC    TO DB-DATA
+  CALL 'DBIO' USING ...
+  PERFORM DMCA-ERRFLDS THRU DMCA-ERRFLDS-EXIT.
+  IF DB-OK
+      MOVE DB-DATA  TO JV-CONTROL-REC
+      MOVE DB-ROWID TO 287-ROWID
+  END-IF
+  IF ERROR-NUM NOT EQUAL '0000'
+      DISPLAY 'ERROR ON FETCH' UPON PRINTER
+  ELSE
+      DISPLAY 'FETCHED CONTROL REC'.
+</pre>
+</td><td style="width:50%">
+<pre>
+private static DispatcherResult
+    fetchControlRecord(DbDispatcher d) {
+  return d.selectOne("""
+    SELECT CONTROL_RECORD_DATA
+      FROM CONTROL_RECORD_TABLE
+     WHERE CONTROL_RECORD_NAME = ?
+       AND CONTROL_RECORD_NUMBER = ?
+    """,
+    "JV-CONTROL-REC", 1);
+}
+</pre>
+</td></tr></table>
+</div>
+</details>
+
+<details>
+<summary>MODIFY-CTRL-REC (LABA05.cbl:176-205) → modifyControlRecord()</summary>
+<div class="details-content">
+<table style="table-layout:fixed;"><tr><td style="width:50%">
+<pre>
+MODIFY-CTRL-REC.
+  DISPLAY 'Before modification:' UPON PRINTER.
+  PERFORM 9999-DISPLAY-REC.
+  MOVE 1 TO JV-NUMBER.
+  MOVE 'JV-CONTROL-REC' TO DB-DMSREC-NAME
+  MOVE 'UPDATE'          TO DB-FUNCTION
+  MOVE 'MODIFY'          TO DB-FUNCTION-TYPE
+  MOVE JV-CONTROL-REC    TO DB-DATA
+  CALL 'DBIO' USING ...
+  PERFORM DMCA-ERRFLDS.
+  IF ERROR-NUM NOT EQUAL '0000'
+      DISPLAY 'ERROR ON MODIFY' UPON PRINTER
+      MOVE 99 TO RETURN-CODE
+      STOP RUN
+  ELSE
+      DISPLAY 'After modification:' UPON PRINTER
+      PERFORM 9999-DISPLAY-REC.
+</pre>
+</td><td style="width:50%">
+<pre>
+// Step 4: MOVE 1 TO JV-NUMBER
+JvControlRecord updated =
+    record.withJvNumber(TARGET_JV_NUMBER);
+String newData = updated.toControlRecordData();
+
+// Step 5: UPDATE
+DispatcherResult updateResult =
+    modifyControlRecord(dispatcher, newData);
+if (!updateResult.ok()) {
+    dispatcher.rollback();
+    return new ResetOutcome(RC_DB_ERROR,
+        before, null, "update failed");
+}
+dispatcher.commit();
+</pre>
+</td></tr></table>
+</div>
+</details>
+
+<!-- Section 3: Data Structure Mapping -->
+<h2>3. Data structure mapping</h2>
+
+<details open>
+<summary>JV-CONTROL-REC.cpy → JvControlRecord.java</summary>
+<div class="details-content">
+<table>
+    <tr><th>COBOL field</th><th>PIC clause</th><th>Byte offset</th><th>Java type</th><th>Java field</th></tr>
+    <tr><td>JV-CONTROL-1</td><td>PIC 9(006)</td><td>0–5</td><td><code>int</code></td><td><code>jvControl1</code></td></tr>
+    <tr><td>JV-CONTROL-2</td><td>PIC 9(006)</td><td>6–11</td><td><code>int</code></td><td><code>jvControl2</code></td></tr>
+    <tr><td>JV-CONTROL-3</td><td>PIC 9(006)</td><td>12–17</td><td><code>int</code></td><td><code>jvControl3</code></td></tr>
+    <tr><td>JV-CONTROL-4</td><td>PIC 9(006)</td><td>18–23</td><td><code>int</code></td><td><code>jvControl4</code></td></tr>
+    <tr><td>JV-NUMBER</td><td>PIC 9(006) USAGE BINARY</td><td>24–29</td><td><code>int</code></td><td><code>jvNumber</code></td></tr>
+    <tr><td>FILLER</td><td>PIC X(009)</td><td>30–38</td><td><code>String</code></td><td><code>filler1</code></td></tr>
+    <tr><td>JV-CONTROL-5</td><td>PIC 9(006)</td><td>39–44</td><td><code>int</code></td><td><code>jvControl5</code></td></tr>
+    <tr><td>FILLER</td><td>PIC X(010)</td><td>45–54</td><td><code>String</code></td><td><code>filler2</code></td></tr>
+</table>
+<p><strong>Note (Risk 2):</strong> <code>JV-NUMBER</code> is <code>USAGE BINARY</code> in the copybook but stored as
+zoned decimal in the 400-byte <code>CHAR(400)</code> blob. The demo uses the display form.
+Production may require <code>ByteBuffer</code>-based binary handling.</p>
+</div>
+</details>
+
+<details>
+<summary>DBVAR.cpy → DbDispatcher / DispatcherResult fields</summary>
+<div class="details-content">
+<table>
+    <tr><th>COBOL field</th><th>PIC</th><th>Java mapping</th></tr>
+    <tr><td>DB-FUNCTION</td><td>PIC X(20)</td><td>Method name (selectOne, update, commit, rollback)</td></tr>
+    <tr><td>DB-FUNCTION-TYPE</td><td>PIC X(20)</td><td>Parameter to DmsErrorCodes.translate()</td></tr>
+    <tr><td>DB-DATA</td><td>PIC X(2100)</td><td>SQL parameters / result set data</td></tr>
+    <tr><td>DB-SQLCODE-NUM</td><td>PIC S9(9) BINARY</td><td><code>DispatcherResult.sqlcode()</code></td></tr>
+    <tr><td>DB-RTNCODE-DMS</td><td>PIC X(4)</td><td><code>DispatcherResult.rtncodesDms()</code></td></tr>
+    <tr><td>DB-MESSAGE</td><td>PIC X(80)</td><td><code>DispatcherResult.message()</code></td></tr>
+</table>
+</div>
+</details>
+
+<!-- Section 4: Risk Register -->
+<h2>4. Risk register summary</h2>
+
+<table>
+    <tr><th>#</th><th>Risk</th><th>Severity</th><th>Java mitigation</th><th>Status</th></tr>
+    <tr>
+        <td>2</td>
+        <td>Binary↔display JV-NUMBER conversion</td>
+        <td class="risk-high">HIGH</td>
+        <td>JvControlRecord uses zoned-display form (6 ASCII digits at bytes 24-29).
+            Marked with <code>// RISK 2</code> comments. Production path documented as TODO.</td>
+        <td class="risk-medium">Mitigated (demo)</td>
+    </tr>
+    <tr>
+        <td>3</td>
+        <td>Credential files <code>/tst/.oralogin</code></td>
+        <td class="risk-high">HIGH</td>
+        <td>Connection externalized — <code>DbDispatcher</code> takes a <code>java.sql.Connection</code>.
+            No credential files, no hardcoded secrets.</td>
+        <td class="risk-closed">Resolved</td>
+    </tr>
+    <tr>
+        <td>6</td>
+        <td>SQLCODE → DMS return-code translation</td>
+        <td class="risk-medium">MEDIUM</td>
+        <td><code>DmsErrorCodes.translate()</code> reproduces DBIO.pco:374-398 verbatim using
+            Java 21 switch expression.</td>
+        <td class="risk-closed">Resolved</td>
+    </tr>
+</table>
+
+<!-- Section 5: Test Coverage -->
+<h2>5. Test coverage</h2>
+
+<details open>
+<summary>12 JUnit 5 tests — all ported from Python reference</summary>
+<div class="details-content">
+<table>
+    <tr><th>Test class</th><th>Test method</th><th>Description</th><th>COBOL behavior validated</th></tr>
+    <tr><td rowspan="4">Laba05ResetTest (Byte layout)</td>
+        <td><code>testSliceIs24To30</code></td>
+        <td>Verify JV-NUMBER byte offsets</td>
+        <td>JV-CONTROL-REC.cpy:6 layout</td></tr>
+    <tr><td><code>testDataBlobMustBe400Bytes</code></td>
+        <td>Reject non-400-byte input</td>
+        <td>CONTROL_RECORD_DATA CHAR(400) constraint</td></tr>
+    <tr><td><code>testExtractHandlesZeroPaddedDigits</code></td>
+        <td>Parse "000042" → 42</td>
+        <td>PIC 9(006) zero-padding behavior</td></tr>
+    <tr><td><code>testReplacePreservesSurroundingBytes</code></td>
+        <td>Surrounding data unchanged after update</td>
+        <td>CONTROL-RECORD-TABLE-IO.pco:21-28 display form</td></tr>
+    <tr><td rowspan="4">Laba05ResetTest (End-to-end)</td>
+        <td><code>testResetSucceedsWhenRowExists</code></td>
+        <td>Seed jvNumber=42, verify before=42 after=1</td>
+        <td>LABA05.cbl:87-105 success path</td></tr>
+    <tr><td><code>testReturns99WhenRowMissing</code></td>
+        <td>No row → returnCode=99</td>
+        <td>LABA05.cbl:92-98 error path</td></tr>
+    <tr><td><code>testReturns99WhenUpdateFails</code></td>
+        <td>Update failure → returnCode=99</td>
+        <td>LABA05.cbl:196-200 MODIFY error</td></tr>
+    <tr><td><code>testReturns99OnSqlException</code></td>
+        <td>Table dropped → returnCode=99</td>
+        <td>LABA05.cbl:83 CONNECT error analog</td></tr>
+    <tr><td>Laba05ResetTest (Round-trip)</td>
+        <td><code>testRoundTrip</code></td>
+        <td>Values 1, 17, 999999 → reset to 1</td>
+        <td>Risk 2: binary↔display round-trip</td></tr>
+    <tr><td rowspan="5">JvControlRecordTest</td>
+        <td><code>testFromControlRecordData</code></td>
+        <td>Parse known 400-byte blob</td>
+        <td>JV-CONTROL-REC.cpy field extraction</td></tr>
+    <tr><td><code>testToControlRecordDataRoundTrip</code></td>
+        <td>Serialize → parse → compare</td>
+        <td>Display form round-trip integrity</td></tr>
+    <tr><td><code>testWithJvNumber</code></td>
+        <td>withJvNumber(1) updates correctly</td>
+        <td>LABA05.cbl:179 MOVE 1 TO JV-NUMBER</td></tr>
+    <tr><td><code>testFieldsByteOffsets</code></td>
+        <td>Each field at correct offset</td>
+        <td>JV-CONTROL-REC.cpy:2-9 layout</td></tr>
+    <tr><td><code>testRejectsWrongLength</code></td>
+        <td>Non-400-byte → exception</td>
+        <td>CHAR(400) constraint enforcement</td></tr>
+</table>
+</div>
+</details>
+
+<hr style="margin-top:2rem;">
+<p style="text-align:center; color:#718096; font-size:0.85rem;">
+    Generated by Cognition AI · LABA05 COBOL→Java 21 Migration · Demo output pending SME review
+</p>
+
+</body>
+</html>
