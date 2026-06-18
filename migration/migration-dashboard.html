@@ -1,0 +1,1659 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>JV COBOL → Java 21 Migration Dashboard — Cognition</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+/* ===== CSS Custom Properties (Light / Dark) ===== */
+:root {
+  --ink: #000000;
+  --ink-2: #1a1a1a;
+  --paper: #ffffff;
+  --rule: #e6e6e6;
+  --muted: #595959;
+  --soft: #f6f5f1;
+  --accent: #000000;
+  --warn-bg: #fff4e0;
+  --warn-ink: #7a4a00;
+  --ok-bg: #e8f5ec;
+  --ok-ink: #14532d;
+  --bad-bg: #fde2e2;
+  --bad-ink: #7a1a1a;
+  --closed-bg: #d1fae5;
+  --closed-ink: #065f46;
+  --card-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  --code-bg: #0d0d0d;
+  --code-fg: #f4f4f4;
+}
+[data-theme="dark"] {
+  --ink: #e8e8e8;
+  --ink-2: #cccccc;
+  --paper: #111111;
+  --rule: #2a2a2a;
+  --muted: #888888;
+  --soft: #1a1a1a;
+  --accent: #e8e8e8;
+  --warn-bg: #3d2e00;
+  --warn-ink: #ffd666;
+  --ok-bg: #0a2e1a;
+  --ok-ink: #6ee7b7;
+  --bad-bg: #3b1111;
+  --bad-ink: #fca5a5;
+  --closed-bg: #064e3b;
+  --closed-ink: #a7f3d0;
+  --card-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  --code-bg: #0a0a0a;
+  --code-fg: #e0e0e0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Inter Tight', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+a:hover { color: var(--ink-2); }
+code, pre, .mono { font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace; }
+
+/* Layout */
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+
+/* ===== Sticky Header ===== */
+header.top {
+  border-bottom: 1px solid var(--rule);
+  padding: 0;
+  background: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+header.top .row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.wordmark {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-weight: 600; letter-spacing: 0.2px; font-size: 16px;
+  color: var(--ink); text-decoration: none; white-space: nowrap;
+}
+.wordmark svg { display: block; }
+.wordmark .slash { opacity: 0.35; padding: 0 4px; }
+.wordmark .doc { font-weight: 400; color: var(--muted); }
+nav.main-nav { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+nav.main-nav a {
+  text-decoration: none; color: var(--muted); font-size: 13px;
+  padding: 6px 10px; border-radius: 6px; transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+nav.main-nav a:hover { background: var(--soft); color: var(--ink); }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.status-pill {
+  display: inline-block; padding: 4px 12px; border-radius: 999px;
+  font-size: 12px; color: var(--warn-ink); background: var(--warn-bg);
+  border: 1px solid rgba(0,0,0,0.08); white-space: nowrap;
+  font-weight: 500; letter-spacing: 0.2px;
+}
+.theme-toggle {
+  background: var(--soft); border: 1px solid var(--rule); border-radius: 8px;
+  padding: 5px 10px; cursor: pointer; font-size: 14px; color: var(--ink);
+  transition: background 0.15s;
+}
+.theme-toggle:hover { background: var(--rule); }
+
+/* ===== Sections ===== */
+section { padding: 56px 0; border-bottom: 1px solid var(--rule); }
+section h2 {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1.4px;
+  color: var(--muted); font-weight: 600; margin: 0 0 8px;
+}
+section h3 {
+  font-size: 28px; font-weight: 600; margin: 0 0 20px;
+  letter-spacing: -0.2px; line-height: 1.2;
+}
+.narrative { max-width: 760px; color: var(--ink-2); font-size: 16px; margin: 0 0 32px; }
+
+/* ===== Hero ===== */
+.hero { padding: 64px 0 48px; }
+.hero .eyebrow {
+  text-transform: uppercase; letter-spacing: 1.2px;
+  font-size: 11px; color: var(--muted); margin-bottom: 14px;
+}
+.hero h1 {
+  font-size: 40px; font-weight: 600; line-height: 1.1;
+  margin: 0 0 12px; letter-spacing: -0.4px;
+}
+.hero .lede { color: var(--ink-2); font-size: 18px; max-width: 760px; margin: 0 0 28px; }
+
+/* Metric cards */
+.metrics { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.metric {
+  background: var(--soft); border-radius: 12px; padding: 18px 20px;
+  border: 1px solid var(--rule);
+}
+.metric .v { font-size: 32px; font-weight: 600; letter-spacing: -0.4px; }
+.metric .k {
+  font-size: 11px; color: var(--muted); margin-top: 4px;
+  text-transform: uppercase; letter-spacing: 0.8px;
+}
+
+/* Progress bar */
+.progress-wrap { margin-top: 24px; }
+.progress-wrap .label { font-size: 13px; color: var(--muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
+.progress-bar {
+  height: 18px; background: var(--soft); border-radius: 9px;
+  overflow: hidden; border: 1px solid var(--rule);
+}
+.progress-bar .fill {
+  height: 100%; border-radius: 9px; display: flex; align-items: center;
+  justify-content: flex-end; padding-right: 8px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.4px;
+}
+.fill-green { background: var(--ok-ink); color: #fff; }
+.fill-amber { background: #d97706; color: #fff; }
+
+/* ===== Architecture Diagram ===== */
+.arch-diagram {
+  border: 1px solid var(--rule); border-radius: 12px;
+  padding: 24px; background: var(--paper); margin-bottom: 18px;
+}
+.arch-layer {
+  margin-bottom: 20px;
+}
+.arch-layer-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px;
+  color: var(--muted); font-weight: 600; margin-bottom: 10px;
+  padding-bottom: 4px; border-bottom: 1px solid var(--rule);
+}
+.arch-boxes { display: flex; flex-wrap: wrap; gap: 10px; }
+.arch-box {
+  border: 2px solid var(--rule); border-radius: 10px; padding: 12px 16px;
+  cursor: pointer; transition: all 0.2s; background: var(--paper);
+  min-width: 140px; position: relative;
+}
+.arch-box:hover { border-color: var(--ink); box-shadow: var(--card-shadow); }
+.arch-box.active { border-color: var(--ink); box-shadow: 0 0 0 2px var(--ink); }
+.arch-box .name { font-size: 14px; font-weight: 600; }
+.arch-box .lines { font-size: 11px; color: var(--muted); }
+.arch-box .badge {
+  display: inline-block; font-size: 10px; padding: 2px 8px;
+  border-radius: 999px; margin-top: 4px; text-transform: uppercase;
+  letter-spacing: 0.6px; font-weight: 600;
+}
+.badge-progress { background: var(--warn-bg); color: var(--warn-ink); }
+.badge-planned { background: var(--soft); color: var(--muted); }
+.badge-done { background: var(--ok-bg); color: var(--ok-ink); }
+.badge-closed { background: var(--closed-bg); color: var(--closed-ink); }
+.badge-risk { background: var(--bad-bg); color: var(--bad-ink); }
+.arch-box.green { border-color: #22c55e; }
+.arch-box.red { border-color: #ef4444; }
+.arch-box.gray { border-color: var(--rule); }
+.arch-box.small { min-width: 100px; padding: 8px 12px; }
+.arch-box.small .name { font-size: 12px; }
+
+/* Detail panel */
+.detail-panel {
+  display: none; border: 1px solid var(--rule); border-radius: 12px;
+  padding: 20px 24px; background: var(--soft); margin-top: 12px;
+  margin-bottom: 18px;
+}
+.detail-panel.visible { display: block; }
+.detail-panel h4 { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+.detail-grid {
+  display: grid; grid-template-columns: 140px 1fr;
+  gap: 6px 16px; font-size: 13px;
+}
+.detail-grid .dl { color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.6px; }
+.detail-grid .dd { color: var(--ink-2); }
+
+/* ===== Tables ===== */
+table.t {
+  width: 100%; border-collapse: collapse;
+  border: 1px solid var(--rule); border-radius: 12px; overflow: hidden;
+}
+table.t th, table.t td {
+  text-align: left; padding: 10px 14px;
+  border-bottom: 1px solid var(--rule); font-size: 13px;
+  vertical-align: top;
+}
+table.t th {
+  background: var(--soft); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  font-size: 11px; color: var(--muted); position: sticky; top: 60px;
+  cursor: pointer; user-select: none; white-space: nowrap;
+}
+table.t th:hover { color: var(--ink); }
+table.t tr:last-child td { border-bottom: none; }
+table.t tr:nth-child(even) td { background: var(--soft); }
+table.t tr.expandable-row { cursor: pointer; }
+table.t tr.expandable-row:hover td { background: rgba(0,0,0,0.03); }
+table.t tr.detail-row { display: none; }
+table.t tr.detail-row.open { display: table-row; }
+table.t tr.detail-row td { background: var(--soft); padding: 16px 20px; font-size: 13px; }
+
+/* Filter buttons */
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.filter-btn {
+  background: var(--soft); border: 1px solid var(--rule); border-radius: 8px;
+  padding: 6px 14px; cursor: pointer; font-size: 12px; color: var(--ink);
+  transition: all 0.15s; font-family: inherit; font-weight: 500;
+}
+.filter-btn:hover { background: var(--rule); }
+.filter-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* ===== Phase Board ===== */
+.phase-board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+.phase-col {
+  border: 1px solid var(--rule); border-radius: 12px;
+  overflow: hidden; background: var(--paper);
+}
+.phase-header {
+  padding: 14px 16px; font-weight: 600; font-size: 14px;
+  border-bottom: 1px solid var(--rule);
+}
+.phase-header .phase-num {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--muted); display: block; margin-bottom: 2px;
+}
+.phase-header.done { background: var(--ok-bg); }
+.phase-header.progress { background: var(--warn-bg); }
+.phase-header.planned { background: var(--soft); }
+.phase-cards { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.phase-card {
+  border: 1px solid var(--rule); border-radius: 8px;
+  padding: 10px 12px; font-size: 13px; cursor: pointer;
+  transition: all 0.15s; background: var(--paper);
+}
+.phase-card:hover { box-shadow: var(--card-shadow); }
+.phase-card .card-status {
+  display: inline-block; font-size: 10px; padding: 2px 8px;
+  border-radius: 999px; text-transform: uppercase; font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* ===== Pipeline ===== */
+.pipeline { display: flex; gap: 0; align-items: stretch; }
+.pipeline-stage {
+  flex: 1; padding: 18px; border: 1px solid var(--rule);
+  background: var(--paper); position: relative;
+  border-right: none;
+}
+.pipeline-stage:first-child { border-radius: 12px 0 0 12px; }
+.pipeline-stage:last-child { border-radius: 0 12px 12px 0; border-right: 1px solid var(--rule); }
+.pipeline-stage .stage-num {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--muted); font-weight: 600;
+}
+.pipeline-stage .stage-title { font-size: 14px; font-weight: 600; margin: 4px 0; }
+.pipeline-stage .stage-target { font-size: 12px; color: var(--ok-ink); font-family: 'JetBrains Mono', monospace; }
+.pipeline-stage .stage-rationale { font-size: 12px; color: var(--ink-2); margin-top: 6px; }
+.pipeline-stage.current { border-color: var(--warn-ink); border-width: 2px; background: var(--warn-bg); }
+.pipeline-arrow {
+  display: flex; align-items: center; font-size: 20px; color: var(--muted);
+  padding: 0 4px;
+}
+
+/* ===== Risk Cards ===== */
+.risk-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.risk-card {
+  border: 1px solid var(--rule); border-radius: 12px;
+  padding: 18px 20px; background: var(--paper); cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+.risk-card:hover { box-shadow: var(--card-shadow); }
+.risk-card .row1 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.risk-card .num { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); }
+.risk-card .sev {
+  font-size: 11px; padding: 2px 8px; border-radius: 999px;
+  text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600;
+}
+.sev.high { background: var(--bad-bg); color: var(--bad-ink); }
+.sev.med { background: var(--warn-bg); color: var(--warn-ink); }
+.sev.low { background: var(--soft); color: var(--muted); }
+.sev.closed { background: var(--closed-bg); color: var(--closed-ink); }
+.risk-card h4 { margin: 4px 0 8px; font-size: 15px; font-weight: 600; }
+.risk-card p { margin: 0; color: var(--ink-2); font-size: 13px; line-height: 1.5; }
+.risk-card .risk-detail { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--rule); }
+.risk-card.expanded .risk-detail { display: block; }
+.risk-card .risk-detail .field { margin-bottom: 8px; }
+.risk-card .risk-detail .field-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--muted); font-weight: 600; margin-bottom: 2px;
+}
+
+/* ===== Code blocks ===== */
+pre.code-block {
+  background: var(--code-bg); color: var(--code-fg);
+  padding: 14px 18px; border-radius: 10px; font-size: 12px;
+  overflow-x: auto; margin: 8px 0; line-height: 1.5;
+}
+.kw { color: #93c5fd; }
+.str { color: #86efac; }
+.cmt { color: #6b7280; font-style: italic; }
+.num { color: #fcd34d; }
+
+/* ===== Details/Summary ===== */
+details { border: 1px solid var(--rule); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+details summary {
+  padding: 12px 16px; cursor: pointer; font-weight: 600; font-size: 14px;
+  background: var(--soft); list-style: none; display: flex; align-items: center; gap: 8px;
+}
+details summary::-webkit-details-marker { display: none; }
+details summary::before { content: '\25B6'; font-size: 10px; transition: transform 0.2s; }
+details[open] summary::before { transform: rotate(90deg); }
+details .detail-content { padding: 16px; }
+
+/* ===== Tab switching ===== */
+.tab-group { display: flex; gap: 4px; margin-bottom: 16px; }
+.tab-btn {
+  background: var(--soft); border: 1px solid var(--rule); border-radius: 8px;
+  padding: 8px 16px; cursor: pointer; font-size: 13px; color: var(--muted);
+  font-family: inherit; font-weight: 500; transition: all 0.15s;
+}
+.tab-btn:hover { color: var(--ink); }
+.tab-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ===== CSS Charts ===== */
+.bar-chart { display: flex; flex-direction: column; gap: 12px; }
+.bar-row { display: grid; grid-template-columns: 180px 1fr 80px; align-items: center; gap: 12px; }
+.bar-label { font-size: 13px; color: var(--ink-2); }
+.bar-track {
+  height: 22px; background: var(--soft); border-radius: 11px;
+  overflow: hidden; border: 1px solid var(--rule);
+}
+.bar-fill {
+  height: 100%; border-radius: 11px; display: flex; align-items: center;
+  justify-content: flex-end; padding-right: 10px;
+  font-size: 11px; font-weight: 600; color: #fff;
+  transition: width 0.6s ease;
+}
+.bar-value { font-size: 13px; color: var(--muted); text-align: right; font-weight: 600; }
+.bar-fill.green { background: #16a34a; }
+.bar-fill.amber { background: #d97706; }
+.bar-fill.blue { background: #2563eb; }
+.bar-fill.gray { background: #6b7280; }
+.bar-fill.red { background: #dc2626; }
+
+/* ===== Java Features Cards ===== */
+.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.feature-card {
+  border: 1px solid var(--rule); border-radius: 10px;
+  padding: 14px 16px; background: var(--paper);
+}
+.feature-card .feat-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.feature-card .feat-maps { font-size: 12px; color: var(--muted); }
+.feature-card .feat-status { font-size: 11px; margin-top: 6px; }
+
+/* ===== Footer ===== */
+footer.bottom {
+  padding: 32px 0 64px; color: var(--muted);
+  font-size: 12px; text-align: center;
+}
+footer.bottom .wordmark { justify-content: center; opacity: 0.85; margin-bottom: 8px; }
+footer.bottom a { color: var(--muted); }
+footer.bottom .links { display: flex; justify-content: center; gap: 20px; margin: 12px 0; flex-wrap: wrap; }
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .metrics { grid-template-columns: repeat(3, 1fr); }
+  .phase-board { grid-template-columns: repeat(3, 1fr); }
+  .risk-grid { grid-template-columns: 1fr; }
+  .pipeline { flex-direction: column; }
+  .pipeline-stage { border-right: 1px solid var(--rule); border-bottom: none; }
+  .pipeline-stage:first-child { border-radius: 12px 12px 0 0; }
+  .pipeline-stage:last-child { border-radius: 0 0 12px 12px; border-bottom: 1px solid var(--rule); }
+  .pipeline-arrow { transform: rotate(90deg); justify-content: center; }
+  .feature-grid { grid-template-columns: repeat(2, 1fr); }
+  .bar-row { grid-template-columns: 120px 1fr 60px; }
+}
+@media (max-width: 768px) {
+  .wrap { padding: 0 16px; }
+  .metrics { grid-template-columns: repeat(2, 1fr); }
+  .phase-board { grid-template-columns: 1fr; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 28px; }
+  nav.main-nav { display: none; }
+  .arch-boxes { flex-direction: column; }
+  .bar-row { grid-template-columns: 1fr; gap: 4px; }
+}
+
+/* ===== Print ===== */
+@media print {
+  header.top { position: static; }
+  .theme-toggle { display: none; }
+  nav.main-nav { display: none; }
+  section { break-inside: avoid; padding: 24px 0; }
+  .risk-card .risk-detail { display: block !important; }
+  details[open] .detail-content { display: block; }
+  .arch-box { break-inside: avoid; }
+  .phase-board { grid-template-columns: repeat(3, 1fr); }
+  body { font-size: 12px; }
+  .hero h1 { font-size: 24px; }
+}
+
+/* ===== Utility ===== */
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.mb-16 { margin-bottom: 16px; }
+.text-sm { font-size: 13px; }
+.text-xs { font-size: 11px; }
+.text-muted { color: var(--muted); }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.overflow-x { overflow-x: auto; }
+.status { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.status.done { background: var(--ok-bg); color: var(--ok-ink); }
+.status.progress { background: var(--warn-bg); color: var(--warn-ink); }
+.status.planned { background: var(--soft); color: var(--muted); }
+.two-col-code { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 900px) { .two-col-code { grid-template-columns: 1fr; } .grid-2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- SECTION 1: Sticky Header + Navigation Bar                     -->
+<!-- ============================================================ -->
+<header class="top">
+  <div class="wrap row">
+    <span class="wordmark">
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+        <polygon points="12,2 22,7 22,17 12,22 2,17 2,7" fill="currentColor"/>
+        <polygon points="12,6 18,9 18,15 12,18 6,15 6,9" fill="var(--paper)"/>
+        <polygon points="12,9 15,10.5 15,13.5 12,15 9,13.5 9,10.5" fill="currentColor"/>
+      </svg>
+      Cognition <span class="slash">/</span> <span class="doc">Migration Dashboard</span>
+    </span>
+    <nav class="main-nav">
+      <a href="#overview">Overview</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#components">Components</a>
+      <a href="#migration-plan">Migration Plan</a>
+      <a href="#current-pr">Current PR</a>
+      <a href="#risks">Risks</a>
+      <a href="#requirements">Requirements</a>
+      <a href="#tests">Tests</a>
+    </nav>
+    <div class="header-right">
+      <span class="status-pill">Java 21 Migration &mdash; In Progress</span>
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle dark/light mode">&#9681;</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ============================================================ -->
+<!-- SECTION 2: Executive Overview (Hero)                          -->
+<!-- ============================================================ -->
+<section class="hero" id="overview">
+  <div class="eyebrow">Guidehouse SBA Journal Voucher System</div>
+  <h1>JV COBOL/Pro*COBOL &rarr; Java 21 Migration Dashboard</h1>
+  <p class="lede">
+    Comprehensive view of the full migration effort &mdash; from legacy COBOL analysis through
+    Java 21 code conversion, testing, and integration. All data sourced from the migration
+    artifact suite.
+  </p>
+
+  <div class="metrics">
+    <div class="metric"><div class="v">~2,800</div><div class="k">Legacy COBOL Lines</div></div>
+    <div class="metric"><div class="v">14</div><div class="k">Copybooks</div></div>
+    <div class="metric"><div class="v">5</div><div class="k">Oracle Tables</div></div>
+    <div class="metric"><div class="v">12</div><div class="k">Risks Tracked</div></div>
+    <div class="metric"><div class="v">30</div><div class="k">Business Requirements</div></div>
+    <div class="metric"><div class="v">52</div><div class="k">Tests Passing (Python)</div></div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="label">
+      <span>Overall migration progress</span>
+      <span>LABA05 in progress &middot; 4 programs remaining</span>
+    </div>
+    <div class="progress-bar">
+      <div class="fill fill-amber" style="width: 20%;">20%</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 3: System Architecture (Interactive)                  -->
+<!-- ============================================================ -->
+<section id="architecture">
+  <h2>System Architecture</h2>
+  <h3>Interactive component map</h3>
+  <p class="narrative">Click any component to view details including file path, line count, dependencies, migration status, and associated risks.</p>
+
+  <div class="arch-diagram">
+    <!-- Layer 1: Perl Wrappers -->
+    <div class="arch-layer">
+      <div class="arch-layer-label">Layer 1 &mdash; Perl Wrappers</div>
+      <div class="arch-boxes">
+        <div class="arch-box gray" onclick="showDetail(this)" data-component="laba05-pl">
+          <div class="name">LABA05.pl</div>
+          <div class="lines">66 lines</div>
+          <div class="badge badge-planned">Planned</div>
+        </div>
+        <div class="arch-box gray" onclick="showDetail(this)" data-component="labd20-pl">
+          <div class="name">LABD20-JV.pl</div>
+          <div class="lines">82 lines</div>
+          <div class="badge badge-planned">Planned</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layer 2: COBOL/Pro*COBOL Programs -->
+    <div class="arch-layer">
+      <div class="arch-layer-label">Layer 2 &mdash; COBOL / Pro*COBOL Programs</div>
+      <div class="arch-boxes">
+        <div class="arch-box green" onclick="showDetail(this)" data-component="laba05">
+          <div class="name">LABA05.cbl</div>
+          <div class="lines">285 lines</div>
+          <div class="badge badge-progress">In Progress</div>
+        </div>
+        <div class="arch-box gray" onclick="showDetail(this)" data-component="labd20">
+          <div class="name">LABD20.pco</div>
+          <div class="lines">535 lines</div>
+          <div class="badge badge-planned">Planned</div>
+        </div>
+        <div class="arch-box gray" onclick="showDetail(this)" data-component="dateconv">
+          <div class="name">DATECONV.cbl</div>
+          <div class="lines">1,159 lines</div>
+          <div class="badge badge-planned">Planned</div>
+        </div>
+        <div class="arch-box gray" onclick="showDetail(this)" data-component="dbio">
+          <div class="name">DBIO.pco</div>
+          <div class="lines">407 lines</div>
+          <div class="badge badge-planned">Planned</div>
+        </div>
+        <div class="arch-box gray" onclick="showDetail(this)" data-component="crtio">
+          <div class="name">CONTROL-RECORD-TABLE-IO.pco</div>
+          <div class="lines">406 lines</div>
+          <div class="badge badge-planned">Planned</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layer 3: Copybooks -->
+    <div class="arch-layer">
+      <div class="arch-layer-label">Layer 3 &mdash; Copybooks (14)</div>
+      <div class="arch-boxes">
+        <div class="arch-box small gray" onclick="showDetail(this)" data-component="comcon"><div class="name">COMCON</div><div class="lines">26</div></div>
+        <div class="arch-box small gray" onclick="showDetail(this)" data-component="crt-cpy"><div class="name">CONTROL-RECORD-TABLE</div><div class="lines">30</div></div>
+        <div class="arch-box small gray" onclick="showDetail(this)" data-component="dateconv-pd"><div class="name">DATECONV-PD</div><div class="lines">198</div></div>
+        <div class="arch-box small gray" onclick="showDetail(this)" data-component="dateconv-ws"><div class="name">DATECONV-WS</div><div class="lines">126</div></div>
+        <div class="arch-box small gray" onclick="showDetail(this)" data-component="dbvar"><div class="name">DBVAR</div><div class="lines">25</div></div>
+        <div class="arch-box small gray" onclick="showDetail(this)" data-component="dmca"><div class="name">DMCA</div><div class="lines">118</div></div>
+        <div class="arch-box small gray" onclick="showDetail(this)" data-component="dmcaerr"><div class="name">DMCAERR</div><div class="lines">58</div></div>
+        <div class="arch-box small gray" onclick="showDetail(this)" data-component="jdn-const"><div class="name">JDN-CONSTANTS-WS</div><div class="lines">126</div></div>
+        <div class="arch-box small gray" onclick="showDetail(this)" data-component="jdn-packet"><div class="name">JDN-PACKET-WS</div><div class="lines">94</div></div>
+        <div class="arch-box small gray" onclick="showDetail(this)" data-component="jdn-access"><div class="name">JDN-RECORD-ACCESS</div><div class="lines">167</div></div>
+        <div class="arch-box small gray" onclick="showDetail(this)" data-component="jdn-record"><div class="name">JDN-RECORD-WS</div><div class="lines">122</div></div>
+        <div class="arch-box small green" onclick="showDetail(this)" data-component="jv-ctrl-rec"><div class="name">JV-CONTROL-REC</div><div class="lines">12</div></div>
+        <div class="arch-box small gray" onclick="showDetail(this)" data-component="rdms-err-rtn"><div class="name">RDMS-ERR-RTN</div><div class="lines">40</div></div>
+        <div class="arch-box small gray" onclick="showDetail(this)" data-component="rdms-err-ws"><div class="name">RDMS-ERR-WS</div><div class="lines">20</div></div>
+      </div>
+    </div>
+
+    <!-- Layer 4: External Files -->
+    <div class="arch-layer">
+      <div class="arch-layer-label">Layer 4 &mdash; External Files</div>
+      <div class="arch-boxes">
+        <div class="arch-box gray" onclick="showDetail(this)" data-component="comment-file">
+          <div class="name">COMMENT-FILE</div>
+          <div class="lines">TST.JVCMTS.dat</div>
+          <div class="badge badge-planned">Planned</div>
+        </div>
+        <div class="arch-box gray" onclick="showDetail(this)" data-component="cardfile">
+          <div class="name">CARDFILE</div>
+          <div class="lines">Process date</div>
+          <div class="badge badge-planned">Planned</div>
+        </div>
+        <div class="arch-box red" onclick="showDetail(this)" data-component="oralogin">
+          <div class="name">/tst/.oralogin</div>
+          <div class="lines">Credential</div>
+          <div class="badge badge-risk">Security Risk</div>
+        </div>
+        <div class="arch-box red" onclick="showDetail(this)" data-component="orapasswd">
+          <div class="name">/tst/.orapasswd</div>
+          <div class="lines">Credential</div>
+          <div class="badge badge-risk">Security Risk</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layer 5: Oracle Tables -->
+    <div class="arch-layer">
+      <div class="arch-layer-label">Layer 5 &mdash; Oracle Tables (5)</div>
+      <div class="arch-boxes">
+        <div class="arch-box gray" onclick="showDetail(this)" data-component="tbl-crt"><div class="name">CONTROL_RECORD_TABLE</div><div class="lines">3 cols + 2 timestamps</div></div>
+        <div class="arch-box gray" onclick="showDetail(this)" data-component="tbl-submit"><div class="name">JC_SUBMITTED_COMMENT_TBL</div><div class="lines">9 cols + 2 timestamps</div></div>
+        <div class="arch-box gray" onclick="showDetail(this)" data-component="tbl-reject"><div class="name">JC_REJECTED_COMMENT_TBL</div><div class="lines">6 cols + 2 timestamps</div></div>
+        <div class="arch-box gray" onclick="showDetail(this)" data-component="tbl-applied"><div class="name">JC_APPLIED_COMMENT_TBL</div><div class="lines">10 cols + 2 timestamps</div></div>
+        <div class="arch-box gray" onclick="showDetail(this)" data-component="tbl-count"><div class="name">JC_COUNT_TBL</div><div class="lines">2 cols + 2 timestamps</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="arch-detail" class="detail-panel"></div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 4: Component Inventory Table                          -->
+<!-- ============================================================ -->
+<section id="components">
+  <h2>Component Inventory</h2>
+  <h3>Full source artifact catalog</h3>
+
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterTable('all')">All</button>
+    <button class="filter-btn" onclick="filterTable('cobol')">COBOL</button>
+    <button class="filter-btn" onclick="filterTable('procobol')">Pro*COBOL</button>
+    <button class="filter-btn" onclick="filterTable('copybook')">Copybooks</button>
+    <button class="filter-btn" onclick="filterTable('database')">Database</button>
+    <button class="filter-btn" onclick="filterTable('perl')">Perl</button>
+    <button class="filter-btn" onclick="filterTable('in-progress')">In Progress</button>
+    <button class="filter-btn" onclick="filterTable('planned')">Planned</button>
+  </div>
+
+  <div class="overflow-x">
+  <table class="t" id="inventory-table">
+    <thead>
+      <tr>
+        <th onclick="sortTable(0)">Component</th>
+        <th onclick="sortTable(1)">Type</th>
+        <th onclick="sortTable(2)">Path</th>
+        <th onclick="sortTable(3)">Lines</th>
+        <th onclick="sortTable(4)">Purpose</th>
+        <th onclick="sortTable(5)">Status</th>
+        <th onclick="sortTable(6)">Target Java Class</th>
+        <th>Risks</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- COBOL Programs -->
+      <tr class="expandable-row" data-type="cobol" data-status="in-progress" onclick="toggleRow(this)">
+        <td><strong>LABA05</strong></td><td>COBOL</td><td class="font-mono text-xs">source/cobol/LABA05.cbl</td><td>285</td>
+        <td>Fiscal-year JV reset</td><td><span class="status progress">In Progress</span></td><td class="font-mono">Laba05Reset.java</td><td>Risk 2, 7</td>
+      </tr>
+      <tr class="detail-row"><td colspan="8">Resets JV-NUMBER to 1 on the CONTROL_RECORD_TABLE. Uses DBIO for Oracle connect/select/update. Dependencies: DBIO, JV-CONTROL-REC, DBVAR, DMCA, DMCAERR. Requirements: BR-LABA05-001..006.</td></tr>
+
+      <tr class="expandable-row" data-type="cobol" data-status="planned" onclick="toggleRow(this)">
+        <td><strong>DATECONV</strong></td><td>COBOL</td><td class="font-mono text-xs">source/cobol/DATECONV.cbl</td><td>1,159</td>
+        <td>Date conversion (42 functions)</td><td><span class="status planned">Planned</span></td><td class="font-mono">DateConv.java</td><td>Risk 1 (CLOSED)</td>
+      </tr>
+      <tr class="detail-row"><td colspan="8">42-function date conversion subprogram dispatching on DATESUB-FUNC. Includes JDN computation, calendar validation, date arithmetic. Dependencies: JDN-CONSTANTS-WS, JDN-PACKET-WS, JDN-RECORD-WS, JDN-RECORD-ACCESS, DATECONV-WS.</td></tr>
+
+      <!-- Pro*COBOL Programs -->
+      <tr class="expandable-row" data-type="procobol" data-status="planned" onclick="toggleRow(this)">
+        <td><strong>LABD20</strong></td><td>Pro*COBOL</td><td class="font-mono text-xs">source/procobol/LABD20.pco</td><td>535</td>
+        <td>JV comment loader</td><td><span class="status planned">Planned</span></td><td class="font-mono">Labd20Loader.java</td><td>Risk 1,5,7,11</td>
+      </tr>
+      <tr class="detail-row"><td colspan="8">Daily JV comment ingestion. Reads COMMENT-FILE (300-byte records), validates 9 fields, checks for duplicates, inserts into JC_SUBMITTED_COMMENT_TBL. Dependencies: DBIO, DATECONV, COMCON, DMCA, DATECONV-WS, DATECONV-PD. Requirements: BR-LABD20-001..022.</td></tr>
+
+      <tr class="expandable-row" data-type="procobol" data-status="planned" onclick="toggleRow(this)">
+        <td><strong>DBIO</strong></td><td>Pro*COBOL</td><td class="font-mono text-xs">source/procobol/DBIO.pco</td><td>407</td>
+        <td>Oracle dispatcher</td><td><span class="status planned">Planned</span></td><td class="font-mono">DbDispatcher.java</td><td>Risk 3,4,6</td>
+      </tr>
+      <tr class="detail-row"><td colspan="8">Generic Oracle connection/transaction dispatcher. Reads credential files, constructs IO-module names at runtime via string concatenation. SQLCODE-to-DMS translation at lines 374-398. Dependencies: CONTROL-RECORD-TABLE-IO, RDMS-ERR-WS, RDMS-ERR-RTN.</td></tr>
+
+      <tr class="expandable-row" data-type="procobol" data-status="planned" onclick="toggleRow(this)">
+        <td><strong>CONTROL-RECORD-TABLE-IO</strong></td><td>Pro*COBOL</td><td class="font-mono text-xs">source/procobol/CONTROL-RECORD-TABLE-IO.pco</td><td>406</td>
+        <td>Table CRUD</td><td><span class="status planned">Planned</span></td><td class="font-mono">ControlRecordTableDao.java</td><td>Risk 2,8</td>
+      </tr>
+      <tr class="detail-row"><td colspan="8">CRUD operations for CONTROL_RECORD_TABLE. Manages binary/display conversion for JV-CONTROL-REC. Dynamic WHERE clause via PREPARE/EXECUTE. Dependencies: CONTROL-RECORD-TABLE, JV-CONTROL-REC.</td></tr>
+
+      <!-- Copybooks -->
+      <tr class="expandable-row" data-type="copybook" data-status="planned" onclick="toggleRow(this)"><td>COMCON</td><td>Copybook</td><td class="font-mono text-xs">source/copybooks/COMCON.cpy</td><td>26</td><td>Common constants</td><td><span class="status planned">Planned</span></td><td class="font-mono">Constants.java</td><td></td></tr>
+      <tr class="detail-row"><td colspan="8">Common working storage constants. Used by LABD20.</td></tr>
+      <tr class="expandable-row" data-type="copybook" data-status="planned" onclick="toggleRow(this)"><td>CONTROL-RECORD-TABLE</td><td>Copybook</td><td class="font-mono text-xs">source/copybooks/CONTROL-RECORD-TABLE.cpy</td><td>30</td><td>Table record layout</td><td><span class="status planned">Planned</span></td><td class="font-mono">ControlRecord.java</td><td></td></tr>
+      <tr class="detail-row"><td colspan="8">EXTERNAL record layout for CONTROL_RECORD_TABLE. Used by DBIO and CONTROL-RECORD-TABLE-IO.</td></tr>
+      <tr class="expandable-row" data-type="copybook" data-status="planned" onclick="toggleRow(this)"><td>DATECONV-PD</td><td>Copybook</td><td class="font-mono text-xs">source/copybooks/DATECONV-PD.cpy</td><td>198</td><td>Date procedure wrappers</td><td><span class="status planned">Planned</span></td><td class="font-mono">DateConv.java (methods)</td><td></td></tr>
+      <tr class="detail-row"><td colspan="8">42 entry paragraphs setting DATESUB-FUNC then CALL 'DATECONV'. Supplied 2026-05-21.</td></tr>
+      <tr class="expandable-row" data-type="copybook" data-status="planned" onclick="toggleRow(this)"><td>DATECONV-WS</td><td>Copybook</td><td class="font-mono text-xs">source/copybooks/DATECONV-WS.cpy</td><td>126</td><td>Date working storage</td><td><span class="status planned">Planned</span></td><td class="font-mono">DateConvContext.java</td><td></td></tr>
+      <tr class="detail-row"><td colspan="8">Caller-side data contract for DATECONV (CONV-DATES, DATESUB-FUNC, FROM-CYMD-DT, DATE-IS-VALID). Supplied 2026-05-21.</td></tr>
+      <tr class="expandable-row" data-type="copybook" data-status="planned" onclick="toggleRow(this)"><td>DBVAR</td><td>Copybook</td><td class="font-mono text-xs">source/copybooks/DBVAR.cpy</td><td>25</td><td>DB variables</td><td><span class="status planned">Planned</span></td><td class="font-mono">DbDispatcher.java (fields)</td><td></td></tr>
+      <tr class="detail-row"><td colspan="8">Database variable declarations for DBIO integration. Used by LABA05.</td></tr>
+      <tr class="expandable-row" data-type="copybook" data-status="planned" onclick="toggleRow(this)"><td>DMCA</td><td>Copybook</td><td class="font-mono text-xs">source/copybooks/DMCA.cpy</td><td>118</td><td>DMS common area</td><td><span class="status planned">Planned</span></td><td class="font-mono">DmsCommonArea.java</td><td></td></tr>
+      <tr class="detail-row"><td colspan="8">DMS (Database Management System) common area declarations. Used by LABA05, DBIO.</td></tr>
+      <tr class="expandable-row" data-type="copybook" data-status="planned" onclick="toggleRow(this)"><td>DMCAERR</td><td>Copybook</td><td class="font-mono text-xs">source/copybooks/DMCAERR.cpy</td><td>58</td><td>DMS error handling</td><td><span class="status planned">Planned</span></td><td class="font-mono">DmsErrorCodes.java</td><td></td></tr>
+      <tr class="detail-row"><td colspan="8">DMS error handling and error code definitions. Used by LABA05.</td></tr>
+      <tr class="expandable-row" data-type="copybook" data-status="planned" onclick="toggleRow(this)"><td>JDN-CONSTANTS-WS</td><td>Copybook</td><td class="font-mono text-xs">source/copybooks/JDN-CONSTANTS-WS.cpy</td><td>126</td><td>Julian Day Number constants</td><td><span class="status planned">Planned</span></td><td class="font-mono">JdnConstants.java</td><td></td></tr>
+      <tr class="detail-row"><td colspan="8">Constants for Julian Day Number calculations. Internal to DATECONV. Supplied 2026-05-21.</td></tr>
+      <tr class="expandable-row" data-type="copybook" data-status="planned" onclick="toggleRow(this)"><td>JDN-PACKET-WS</td><td>Copybook</td><td class="font-mono text-xs">source/copybooks/JDN-PACKET-WS.cpy</td><td>94</td><td>JDN packet layout</td><td><span class="status planned">Planned</span></td><td class="font-mono">JdnPacket.java</td><td></td></tr>
+      <tr class="detail-row"><td colspan="8">JDN packet working storage layout. Internal to DATECONV. Supplied 2026-05-21.</td></tr>
+      <tr class="expandable-row" data-type="copybook" data-status="planned" onclick="toggleRow(this)"><td>JDN-RECORD-ACCESS</td><td>Copybook</td><td class="font-mono text-xs">source/copybooks/JDN-RECORD-ACCESS.cpy</td><td>167</td><td>JDN intrinsic function access</td><td><span class="status planned">Planned</span></td><td class="font-mono">JdnAccess.java</td><td></td></tr>
+      <tr class="detail-row"><td colspan="8">Intrinsic-function-based JDN record access section. Internal to DATECONV. Supplied 2026-05-21.</td></tr>
+      <tr class="expandable-row" data-type="copybook" data-status="planned" onclick="toggleRow(this)"><td>JDN-RECORD-WS</td><td>Copybook</td><td class="font-mono text-xs">source/copybooks/JDN-RECORD-WS.cpy</td><td>122</td><td>JDN record layout</td><td><span class="status planned">Planned</span></td><td class="font-mono">JdnRecord.java</td><td></td></tr>
+      <tr class="detail-row"><td colspan="8">JDN record working storage. Internal to DATECONV. Supplied 2026-05-21.</td></tr>
+      <tr class="expandable-row" data-type="copybook" data-status="in-progress" onclick="toggleRow(this)"><td>JV-CONTROL-REC</td><td>Copybook</td><td class="font-mono text-xs">source/copybooks/JV-CONTROL-REC.cpy</td><td>12</td><td>JV control record layout</td><td><span class="status progress">In Progress</span></td><td class="font-mono">JvControlRecord.java</td><td>Risk 2</td></tr>
+      <tr class="detail-row"><td colspan="8">EXTERNAL record layout for the 400-byte CONTROL_RECORD_DATA blob. Contains JV-NUMBER at USAGE BINARY. Used by LABA05, CONTROL-RECORD-TABLE-IO, LABD20.</td></tr>
+      <tr class="expandable-row" data-type="copybook" data-status="planned" onclick="toggleRow(this)"><td>RDMS-ERR-RTN</td><td>Copybook</td><td class="font-mono text-xs">source/copybooks/RDMS-ERR-RTN.cpy</td><td>40</td><td>Error return routine</td><td><span class="status planned">Planned</span></td><td class="font-mono">DmsErrorHandler.java</td><td></td></tr>
+      <tr class="detail-row"><td colspan="8">Error return routine for RDMS/DMS error handling. Used by DBIO.</td></tr>
+      <tr class="expandable-row" data-type="copybook" data-status="planned" onclick="toggleRow(this)"><td>RDMS-ERR-WS</td><td>Copybook</td><td class="font-mono text-xs">source/copybooks/RDMS-ERR-WS.cpy</td><td>20</td><td>Error working storage</td><td><span class="status planned">Planned</span></td><td class="font-mono">DmsErrorState.java</td><td></td></tr>
+      <tr class="detail-row"><td colspan="8">Error working storage for RDMS error handling. Used by DBIO.</td></tr>
+
+      <!-- Perl Wrappers -->
+      <tr class="expandable-row" data-type="perl" data-status="planned" onclick="toggleRow(this)"><td>LABA05.pl</td><td>Perl</td><td class="font-mono text-xs">source/perl/LABA05.pl</td><td>66</td><td>Runtime orchestration</td><td><span class="status planned">Planned</span></td><td class="font-mono">Shell/Config</td><td>Risk 10</td></tr>
+      <tr class="detail-row"><td colspan="8">Environment setup script: sets ORACLE_HOME, LD_LIBRARY_PATH, etc. Invokes rtsora to run LABA05.</td></tr>
+      <tr class="expandable-row" data-type="perl" data-status="planned" onclick="toggleRow(this)"><td>LABD20-JV.pl</td><td>Perl</td><td class="font-mono text-xs">source/perl/LABD20-JV.pl</td><td>82</td><td>Runtime orchestration</td><td><span class="status planned">Planned</span></td><td class="font-mono">Shell/Config</td><td>Risk 10</td></tr>
+      <tr class="detail-row"><td colspan="8">Environment setup script: sets environment variables and file locations for LABD20 invocation via rtsora.</td></tr>
+
+      <!-- Oracle Tables -->
+      <tr class="expandable-row" data-type="database" data-status="planned" onclick="toggleRow(this)"><td>CONTROL_RECORD_TABLE</td><td>Database</td><td class="font-mono text-xs">database/descriptions/describe CONTROL_RECORD_TABLE.txt</td><td></td><td>Generic key/value control records</td><td><span class="status planned">Planned</span></td><td class="font-mono">ControlRecordTableEntity</td><td>Risk 2</td></tr>
+      <tr class="detail-row"><td colspan="8">Columns: CONTROL_RECORD_NAME CHAR(30), CONTROL_RECORD_NUMBER NUMBER, CONTROL_RECORD_DATA CHAR(400), + timestamps. PK: (NAME, NUMBER). Stores 400-byte opaque blob; layout defined by copybook.</td></tr>
+      <tr class="expandable-row" data-type="database" data-status="planned" onclick="toggleRow(this)"><td>JC_SUBMITTED_COMMENT_TBL</td><td>Database</td><td class="font-mono text-xs">database/descriptions/describe JC_SUBMITTED_COMMENT_TBL.txt</td><td></td><td>Submitted JV comments</td><td><span class="status planned">Planned</span></td><td class="font-mono">JcSubmittedCommentEntity</td><td></td></tr>
+      <tr class="detail-row"><td colspan="8">Columns: JC_SUBMITTED CHAR(26) PK, JC_SUBMITTED_NUMBER NUMBER, JC_SUBMITTED_SCHED_DOC_NO CHAR(10), JC_SUBMITTED_COMMENT_HIST CHAR(240), REQUESTOR CHAR(20), APPROVER CHAR(20), CONTROL_NUM CHAR(8), UPDT_PROG_ID CHAR(6), UPDT_PROG_DT DATE, + timestamps.</td></tr>
+      <tr class="expandable-row" data-type="database" data-status="planned" onclick="toggleRow(this)"><td>JC_REJECTED_COMMENT_TBL</td><td>Database</td><td class="font-mono text-xs">database/descriptions/describe JC_REJECTED_COMMENT_TBL.txt</td><td></td><td>Rejected JV comments</td><td><span class="status planned">Planned</span></td><td class="font-mono">JcRejectedCommentEntity</td><td></td></tr>
+      <tr class="detail-row"><td colspan="8">Columns: JC_REJECTED CHAR(26) PK, JC_REJECT_NUMBER NUMBER, JC_REJECTION_DATE DATE, JC_REJECTED_CONTROL_NUM CHAR(8), UPDT_PROG_ID CHAR(6), UPDT_PROG_DT DATE, + timestamps. LABD20 only reads COUNT(*).</td></tr>
+      <tr class="expandable-row" data-type="database" data-status="planned" onclick="toggleRow(this)"><td>JC_APPLIED_COMMENT_TBL</td><td>Database</td><td class="font-mono text-xs">database/descriptions/describe JC_APPLIED_COMMENT_TBL.txt</td><td></td><td>Applied JV comments</td><td><span class="status planned">Planned</span></td><td class="font-mono">JcAppliedCommentEntity</td><td></td></tr>
+      <tr class="detail-row"><td colspan="8">Columns: JC_APPLIED CHAR(26) PK, JC_APPLIED_NUMBER NUMBER, JC_APPLICATION_DATE DATE, SCHED_DOC_NO CHAR(10), COMMENT_HIST CHAR(240), REQUESTOR CHAR(20), APPROVER CHAR(20), CONTROL_NUM CHAR(8), UPDT_PROG_ID CHAR(6), UPDT_PROG_DT DATE, + timestamps.</td></tr>
+      <tr class="expandable-row" data-type="database" data-status="planned" onclick="toggleRow(this)"><td>JC_COUNT_TBL</td><td>Database</td><td class="font-mono text-xs">database/descriptions/describe JC_COUNT_TBL.txt</td><td></td><td>Section comment counts</td><td><span class="status planned">Planned</span></td><td class="font-mono">JcCountEntity</td><td>Risk 8 (PK typo)</td></tr>
+      <tr class="detail-row"><td colspan="8">Columns: JC_SECTION CHAR(2) (actual PK), JC_SECTION_COUNT NUMBER, + timestamps. Describe file claims PK is JC_SUBMITTED (typo). LABD20 updates WHERE JC_SECTION='MA'.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 5: Migration Plan (Phase Board)                       -->
+<!-- ============================================================ -->
+<section id="migration-plan">
+  <h2>Migration Plan</h2>
+  <h3>5-phase execution board</h3>
+
+  <div class="phase-board">
+    <!-- Phase 0 -->
+    <div class="phase-col">
+      <div class="phase-header done">
+        <span class="phase-num">Phase 0</span>Planning
+      </div>
+      <div class="phase-cards">
+        <div class="phase-card"><span class="card-status done">Done</span><div class="mt-16 text-sm">Migration plan</div></div>
+        <div class="phase-card"><span class="card-status done">Done</span><div class="mt-16 text-sm">Risk register (12 risks)</div></div>
+        <div class="phase-card"><span class="card-status done">Done</span><div class="mt-16 text-sm">Assumptions doc</div></div>
+      </div>
+    </div>
+
+    <!-- Phase 1 -->
+    <div class="phase-col">
+      <div class="phase-header done">
+        <span class="phase-num">Phase 1</span>Analysis
+      </div>
+      <div class="phase-cards">
+        <div class="phase-card"><span class="card-status done">Done (Python)</span><div class="mt-16 text-sm">Requirements with citations (30)</div></div>
+        <div class="phase-card"><span class="card-status done">Done</span><div class="mt-16 text-sm">Field-level lineage</div></div>
+        <div class="phase-card"><span class="card-status done">Done</span><div class="mt-16 text-sm">Dependency graph</div></div>
+        <div class="phase-card"><span class="card-status done">Done</span><div class="mt-16 text-sm">SQL catalog (14 statements)</div></div>
+        <div class="phase-card"><span class="card-status progress">In Progress</span><div class="mt-16 text-sm">Java 21 analysis</div></div>
+      </div>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="phase-col">
+      <div class="phase-header progress">
+        <span class="phase-num">Phase 2</span>Code Conversion
+      </div>
+      <div class="phase-cards">
+        <div class="phase-card"><span class="card-status progress">In Progress</span><div class="mt-16 text-sm">LABA05 &rarr; Java 21</div></div>
+        <div class="phase-card"><span class="card-status planned">Planned</span><div class="mt-16 text-sm">DATECONV &rarr; Java 21</div></div>
+        <div class="phase-card"><span class="card-status planned">Planned</span><div class="mt-16 text-sm">DBIO &rarr; Java 21</div></div>
+        <div class="phase-card"><span class="card-status planned">Planned</span><div class="mt-16 text-sm">CONTROL-RECORD-TABLE-IO &rarr; Java 21</div></div>
+        <div class="phase-card"><span class="card-status planned">Planned</span><div class="mt-16 text-sm">LABD20 &rarr; Java 21</div></div>
+      </div>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="phase-col">
+      <div class="phase-header planned">
+        <span class="phase-num">Phase 3</span>Testing
+      </div>
+      <div class="phase-cards">
+        <div class="phase-card"><span class="card-status planned">Planned</span><div class="mt-16 text-sm">JUnit 5 test suites</div></div>
+        <div class="phase-card"><span class="card-status planned">Planned</span><div class="mt-16 text-sm">Synthetic test data</div></div>
+        <div class="phase-card"><span class="card-status planned">Planned</span><div class="mt-16 text-sm">Parity testing vs Python</div></div>
+      </div>
+    </div>
+
+    <!-- Phase 4 -->
+    <div class="phase-col">
+      <div class="phase-header planned">
+        <span class="phase-num">Phase 4</span>Integration
+      </div>
+      <div class="phase-cards">
+        <div class="phase-card"><span class="card-status planned">Planned</span><div class="mt-16 text-sm">Spring Boot wiring</div></div>
+        <div class="phase-card"><span class="card-status planned">Planned</span><div class="mt-16 text-sm">JPA entity mapping</div></div>
+        <div class="phase-card"><span class="card-status planned">Planned</span><div class="mt-16 text-sm">Documentation</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 6: Recommended Conversion Order                       -->
+<!-- ============================================================ -->
+<section id="conversion-order">
+  <h2>Recommended Conversion Order</h2>
+  <h3>Dependency-driven migration sequence</h3>
+
+  <div class="pipeline">
+    <div class="pipeline-stage">
+      <div class="stage-num">Phase 1</div>
+      <div class="stage-title">Copybooks</div>
+      <div class="stage-target">Java records / POJOs</div>
+      <div class="stage-rationale">JV-CONTROL-REC, CONTROL-RECORD-TABLE, DBVAR, DMCA, DMCAERR &mdash; foundation data structures with zero runtime dependencies.</div>
+    </div>
+    <div class="pipeline-stage">
+      <div class="stage-num">Phase 2</div>
+      <div class="stage-title">DBIO + CRT-IO</div>
+      <div class="stage-target">DbDispatcher.java + ControlRecordTableDao.java</div>
+      <div class="stage-rationale">JDBC layer. Everything upstream depends on DB access. Includes SQLCODE-to-DMS translation.</div>
+    </div>
+    <div class="pipeline-stage current">
+      <div class="stage-num">Phase 3 &mdash; Current PR</div>
+      <div class="stage-title">LABA05</div>
+      <div class="stage-target">Laba05Reset.java</div>
+      <div class="stage-rationale">Validates the DB layer end-to-end. Simplest program &mdash; ideal first proof point.</div>
+    </div>
+    <div class="pipeline-stage">
+      <div class="stage-num">Phase 4</div>
+      <div class="stage-title">DATECONV</div>
+      <div class="stage-target">DateConv.java</div>
+      <div class="stage-rationale">42 static methods. Use java.time where safe; preserve Julian Day Number arithmetic for legacy parity.</div>
+    </div>
+    <div class="pipeline-stage">
+      <div class="stage-num">Phase 5</div>
+      <div class="stage-title">LABD20</div>
+      <div class="stage-target">Labd20Loader.java</div>
+      <div class="stage-rationale">Most complex &mdash; depends on all prior phases. File I/O, validation, batch insert, post-processing.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 7: Current PR Deep-Dive — LABA05                      -->
+<!-- ============================================================ -->
+<section id="current-pr">
+  <h2>Current PR Deep-Dive</h2>
+  <h3>LABA05 Java 21 migration</h3>
+
+  <!-- 7a: Side-by-Side Code Mapping -->
+  <details>
+    <summary>7a. Side-by-side code mapping (COBOL &harr; Java)</summary>
+    <div class="detail-content overflow-x">
+      <table class="t">
+        <thead><tr><th>COBOL Paragraph</th><th>Lines</th><th>Java Method</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr class="expandable-row" onclick="toggleRow(this)"><td>PROCEDURE DIVISION (connect)</td><td>67-85</td><td class="font-mono">Laba05Reset.run()</td><td>Oracle connection via DBIO</td></tr>
+          <tr class="detail-row"><td colspan="4"><div class="two-col-code"><pre class="code-block"><span class="cmt">* COBOL (LABA05.cbl:67-85)</span>
+<span class="kw">PROCEDURE DIVISION</span>.
+    <span class="kw">MOVE</span> <span class="str">'JV-CONTROL-REC'</span> <span class="kw">TO</span> DB-TABLE-NAME
+    <span class="kw">MOVE</span> <span class="num">1100</span> <span class="kw">TO</span> DB-FUNCTION
+    <span class="kw">CALL</span> <span class="str">'DBIO'</span> <span class="kw">USING</span> DB-COMMON-AREA
+    <span class="kw">IF</span> NOT DB-OK
+       <span class="kw">MOVE</span> <span class="num">99</span> <span class="kw">TO</span> RETURN-CODE
+       <span class="kw">STOP RUN</span>.</pre><pre class="code-block"><span class="cmt">// Java 21 (Laba05Reset.java)</span>
+<span class="kw">public</span> ResetOutcome <span class="kw">run</span>(DbDispatcher dispatcher) {
+    <span class="kw">try</span> {
+        dispatcher.connect();
+        <span class="kw">var</span> record = fetchControlRecord(dispatcher);
+        <span class="kw">var</span> result = modifyControlRecord(dispatcher, record);
+        dispatcher.commit();
+        <span class="kw">return</span> ResetOutcome.success(record, result);
+    } <span class="kw">catch</span> (DmsException e) {
+        dispatcher.rollback();
+        <span class="kw">return</span> ResetOutcome.failure(<span class="num">99</span>, e);
+    }
+}</pre></div></td></tr>
+
+          <tr class="expandable-row" onclick="toggleRow(this)"><td>FETCH-CTRL-REC</td><td>150-174</td><td class="font-mono">fetchControlRecord()</td><td>SELECT from CONTROL_RECORD_TABLE</td></tr>
+          <tr class="detail-row"><td colspan="4"><div class="two-col-code"><pre class="code-block"><span class="cmt">* COBOL (LABA05.cbl:150-174)</span>
+<span class="kw">MOVE</span> <span class="str">'JV-CONTROL-REC'</span> <span class="kw">TO</span>
+    CONTROL-RECORD-NAME
+<span class="kw">MOVE</span> <span class="num">1</span> <span class="kw">TO</span> CONTROL-RECORD-NUMBER
+<span class="kw">MOVE</span> <span class="num">1200</span> <span class="kw">TO</span> DB-FUNCTION
+<span class="kw">CALL</span> <span class="str">'DBIO'</span> <span class="kw">USING</span> DB-COMMON-AREA</pre><pre class="code-block"><span class="cmt">// Java 21</span>
+<span class="kw">private</span> JvControlRecord <span class="kw">fetchControlRecord</span>(
+        DbDispatcher d) {
+    <span class="kw">var</span> result = d.selectOne(
+        <span class="str">"""
+        SELECT CONTROL_RECORD_DATA
+          FROM CONTROL_RECORD_TABLE
+         WHERE CONTROL_RECORD_NAME = ?
+           AND CONTROL_RECORD_NUMBER = ?
+        """</span>, <span class="str">"JV-CONTROL-REC"</span>, <span class="num">1</span>);
+    <span class="kw">return</span> JvControlRecord.fromBlob(
+        result.getString(<span class="num">1</span>));
+}</pre></div></td></tr>
+
+          <tr class="expandable-row" onclick="toggleRow(this)"><td>MODIFY-CTRL-REC</td><td>176-205</td><td class="font-mono">modifyControlRecord()</td><td>MOVE 1 TO JV-NUMBER + UPDATE</td></tr>
+          <tr class="detail-row"><td colspan="4"><div class="two-col-code"><pre class="code-block"><span class="cmt">* COBOL (LABA05.cbl:176-205)</span>
+<span class="kw">DISPLAY</span> <span class="str">'JV-NUMBER='</span>
+    JV-NUMBER <span class="kw">OF</span> JV-CONTROL-REC
+<span class="kw">MOVE</span> <span class="num">1</span> <span class="kw">TO</span> JV-NUMBER
+<span class="kw">MOVE</span> <span class="num">1300</span> <span class="kw">TO</span> DB-FUNCTION
+<span class="kw">CALL</span> <span class="str">'DBIO'</span> <span class="kw">USING</span> DB-COMMON-AREA</pre><pre class="code-block"><span class="cmt">// Java 21</span>
+<span class="kw">private</span> JvControlRecord <span class="kw">modifyControlRecord</span>(
+        DbDispatcher d, JvControlRecord rec) {
+    logger.info(<span class="str">"JV-NUMBER=%d"</span>, rec.jvNumber());
+    <span class="kw">var</span> updated = rec.withJvNumber(<span class="num">1</span>);
+    d.update(<span class="str">"""
+        UPDATE CONTROL_RECORD_TABLE
+           SET CONTROL_RECORD_DATA = ?
+         WHERE CONTROL_RECORD_NAME = ?
+           AND CONTROL_RECORD_NUMBER = ?
+        """</span>, updated.toBlob(),
+        <span class="str">"JV-CONTROL-REC"</span>, <span class="num">1</span>);
+    <span class="kw">return</span> updated;
+}</pre></div></td></tr>
+
+          <tr class="expandable-row" onclick="toggleRow(this)"><td>CLOSE-DEPART-DB</td><td>120-140</td><td class="font-mono">dispatcher.commit()</td><td>Transaction commit</td></tr>
+          <tr class="detail-row"><td colspan="4">Legacy: MOVE 1500 TO DB-FUNCTION, CALL 'DBIO'. Java: <code>dispatcher.commit()</code> wrapping JDBC <code>connection.commit()</code>.</td></tr>
+          <tr class="expandable-row" onclick="toggleRow(this)"><td>DML-ROLLBACK-PARA</td><td>207-228</td><td class="font-mono">dispatcher.rollback()</td><td>Error rollback</td></tr>
+          <tr class="detail-row"><td colspan="4">Legacy: MOVE 1700 TO DB-FUNCTION, CALL 'DBIO', MOVE 99 TO RETURN-CODE. Java: <code>dispatcher.rollback()</code> in catch block, return <code>RC_DB_ERROR=99</code>.</td></tr>
+          <tr class="expandable-row" onclick="toggleRow(this)"><td>9999-DISPLAY-REC</td><td>274-283</td><td class="font-mono">displayRecord()</td><td>Log before/after state</td></tr>
+          <tr class="detail-row"><td colspan="4">Legacy: DISPLAY JV-CONTROL fields UPON PRINTER. Java: <code>logger.info("JV-CONTROL-1=%s JV-NUMBER=%d ...", rec.jvControl1(), rec.jvNumber(), ...)</code></td></tr>
+          <tr class="expandable-row" onclick="toggleRow(this)"><td>COPY JV-CONTROL-REC</td><td>copybook</td><td class="font-mono">JvControlRecord.java</td><td>Java record type</td></tr>
+          <tr class="detail-row"><td colspan="4">COBOL copybook with EXTERNAL 01 level. Java: <code>public record JvControlRecord(int jvControl1, int jvControl2, int jvControl3, int jvControl4, int jvNumber, String filler1, int jvControl5, String filler2)</code></td></tr>
+          <tr class="expandable-row" onclick="toggleRow(this)"><td>COPY DBVAR + DMCA + DMCAERR</td><td>copybooks</td><td class="font-mono">DbDispatcher.java + DmsErrorCodes.java</td><td>DB access layer</td></tr>
+          <tr class="detail-row"><td colspan="4">COBOL copybooks providing DB-COMMON-AREA, DMS return codes, error display formatting. Java: sealed interface <code>DmsResult</code> with <code>DmsOk</code>, <code>DmsNotFound</code>, <code>DmsFatal</code> pattern-matched via switch expressions.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <!-- 7b: Data Structure Mapping -->
+  <details>
+    <summary>7b. Data structure mapping (JV-CONTROL-REC fields)</summary>
+    <div class="detail-content overflow-x">
+      <table class="t">
+        <thead><tr><th>COBOL Field</th><th>PIC Clause</th><th>Byte Offset</th><th>Java Field</th><th>Java Type</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>JV-CONTROL-1</td><td class="font-mono">PIC 9(006)</td><td>0-5</td><td class="font-mono">jvControl1</td><td>int</td><td>Zoned decimal</td></tr>
+          <tr><td>JV-CONTROL-2</td><td class="font-mono">PIC 9(006)</td><td>6-11</td><td class="font-mono">jvControl2</td><td>int</td><td></td></tr>
+          <tr><td>JV-CONTROL-3</td><td class="font-mono">PIC 9(006)</td><td>12-17</td><td class="font-mono">jvControl3</td><td>int</td><td></td></tr>
+          <tr><td>JV-CONTROL-4</td><td class="font-mono">PIC 9(006)</td><td>18-23</td><td class="font-mono">jvControl4</td><td>int</td><td></td></tr>
+          <tr><td><strong>JV-NUMBER</strong></td><td class="font-mono">PIC 9(006) USAGE BINARY</td><td>24-29</td><td class="font-mono">jvNumber</td><td>int</td><td style="color:var(--bad-ink)">&#9888; RISK 2 &mdash; binary/display conversion</td></tr>
+          <tr><td>FILLER</td><td class="font-mono">PIC X(009)</td><td>30-38</td><td class="font-mono">filler1</td><td>String</td><td></td></tr>
+          <tr><td>JV-CONTROL-5</td><td class="font-mono">PIC 9(006)</td><td>39-44</td><td class="font-mono">jvControl5</td><td>int</td><td></td></tr>
+          <tr><td>FILLER</td><td class="font-mono">PIC X(010)</td><td>45-54</td><td class="font-mono">filler2</td><td>String</td><td></td></tr>
+          <tr><td colspan="6" class="text-muted text-sm">Remaining bytes 55-399 are padding to fill CHAR(400) CONTROL_RECORD_DATA column.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <!-- 7c: SQLCODE → DMS Translation -->
+  <details>
+    <summary>7c. SQLCODE &rarr; DMS translation table</summary>
+    <div class="detail-content overflow-x">
+      <p class="text-sm text-muted mb-16">Source: <code>DBIO.pco:374-398</code> (5300-TRANSLATE-SQLCODE)</p>
+      <table class="t">
+        <thead><tr><th>SQLCODE</th><th>DMS Code</th><th>Meaning</th><th>Java Equivalent</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td class="font-mono">0000</td><td>OK</td><td class="font-mono">DmsResult.OK</td></tr>
+          <tr><td>100 / 1403</td><td class="font-mono">0013</td><td>NOT FOUND</td><td class="font-mono">DmsResult.NOT_FOUND</td></tr>
+          <tr><td>100 / 1403 (with set)</td><td class="font-mono">0007</td><td>END OF SET</td><td class="font-mono">DmsResult.END_OF_SET</td></tr>
+          <tr><td>-1</td><td class="font-mono">0005</td><td>DUP KEY</td><td class="font-mono">DmsResult.DUP_KEY</td></tr>
+          <tr><td>-8103</td><td class="font-mono">0000</td><td>Object gone (continue)</td><td class="font-mono">DmsResult.OK (logged)</td></tr>
+          <tr><td>other</td><td class="font-mono">9999</td><td>Fatal</td><td class="font-mono">throw DmsException</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <!-- 7d: Test Plan -->
+  <details id="tests">
+    <summary>7d. Test plan (JUnit 5 &mdash; ported from 12 Python tests)</summary>
+    <div class="detail-content overflow-x">
+      <table class="t">
+        <thead><tr><th>Test Class</th><th>Test Method</th><th>What It Validates</th><th>COBOL Behavior</th></tr></thead>
+        <tbody>
+          <tr><td>JvControlRecordTest</td><td class="font-mono">testSliceIs24To30</td><td>Byte offset correctness</td><td>JV-CONTROL-REC.cpy field layout</td></tr>
+          <tr><td>JvControlRecordTest</td><td class="font-mono">testDataBlobMustBe400Bytes</td><td>Input validation</td><td>CHAR(400) column constraint</td></tr>
+          <tr><td>JvControlRecordTest</td><td class="font-mono">testExtractZeroPadded</td><td>Parse "000042" &rarr; 42</td><td>Display-form parsing</td></tr>
+          <tr><td>JvControlRecordTest</td><td class="font-mono">testReplacePreservesSurrounding</td><td>Surrounding data unchanged</td><td>MOVE semantics</td></tr>
+          <tr><td>Laba05ResetTest</td><td class="font-mono">testResetSucceeds</td><td>Happy path end-to-end</td><td>Full LABA05 flow</td></tr>
+          <tr><td>Laba05ResetTest</td><td class="font-mono">testReturns99WhenMissing</td><td>Row not found</td><td>FETCH-CTRL-REC error</td></tr>
+          <tr><td>Laba05ResetTest</td><td class="font-mono">testReturns99WhenUpdateFails</td><td>Update error</td><td>MODIFY-CTRL-REC error</td></tr>
+          <tr><td>Laba05ResetTest</td><td class="font-mono">testReturns99OnSqlException</td><td>SQL exception</td><td>ABORTRUN equivalent</td></tr>
+          <tr><td>Laba05ResetTest</td><td class="font-mono">testRoundTrip</td><td>Binary&harr;display correctness</td><td>Risk 2 mitigation</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <!-- 7e: Java 21 Features -->
+  <details>
+    <summary>7e. Java 21 features used</summary>
+    <div class="detail-content">
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feat-name">Records</div>
+          <div class="feat-maps">&rarr; Copybook data structures</div>
+          <div class="feat-status"><span class="status progress">Current PR</span></div>
+        </div>
+        <div class="feature-card">
+          <div class="feat-name">Sealed interfaces</div>
+          <div class="feat-maps">&rarr; DMS error code hierarchy</div>
+          <div class="feat-status"><span class="status progress">Current PR</span></div>
+        </div>
+        <div class="feature-card">
+          <div class="feat-name">Switch expressions + pattern matching</div>
+          <div class="feat-maps">&rarr; DATECONV 42-way dispatch</div>
+          <div class="feat-status"><span class="status planned">Future</span></div>
+        </div>
+        <div class="feature-card">
+          <div class="feat-name">java.time</div>
+          <div class="feat-maps">&rarr; DATECONV date functions</div>
+          <div class="feat-status"><span class="status planned">Future</span></div>
+        </div>
+        <div class="feature-card">
+          <div class="feat-name">Virtual threads</div>
+          <div class="feat-maps">&rarr; Batch concurrency</div>
+          <div class="feat-status"><span class="status planned">Future</span></div>
+        </div>
+        <div class="feature-card">
+          <div class="feat-name">Try-with-resources</div>
+          <div class="feat-maps">&rarr; DBIO CONNECT/DEPART lifecycle</div>
+          <div class="feat-status"><span class="status progress">Current PR</span></div>
+        </div>
+        <div class="feature-card">
+          <div class="feat-name">Text blocks</div>
+          <div class="feat-maps">&rarr; SQL statements</div>
+          <div class="feat-status"><span class="status progress">Current PR</span></div>
+        </div>
+      </div>
+    </div>
+  </details>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 8: Risk Register                                      -->
+<!-- ============================================================ -->
+<section id="risks">
+  <h2>Risk Register</h2>
+  <h3>12 tracked risks</h3>
+
+  <div class="risk-grid">
+    <!-- Risk 1 -->
+    <div class="risk-card" onclick="this.classList.toggle('expanded')">
+      <div class="row1"><span class="num">Risk 1</span><span class="sev closed">Closed</span></div>
+      <h4>DATECONV-WS / DATECONV-PD copybooks</h4>
+      <p>Previously missing date-conversion copybooks &mdash; resolved 2026-05-21 with customer follow-up shipment.</p>
+      <div class="risk-detail">
+        <div class="field"><div class="field-label">Status</div>CLOSED &mdash; customer supplied full date-conversion closure (DATECONV.cbl + 6 copybooks).</div>
+        <div class="field"><div class="field-label">Evidence</div><code>LABD20.pco:182</code> (<code>COPY DATECONV-WS</code>), <code>LABD20.pco:267</code> (<code>PERFORM CHECK-CYMD-DT</code>)</div>
+        <div class="field"><div class="field-label">Mitigation</div>Faithful Python port at <code>dateconv.py</code>; GnuCOBOL byte-for-byte parity verified (52 vectors, 51 matched, 1 documented modernization improvement).</div>
+        <div class="field"><div class="field-label">Affected Components</div>LABD20, DATECONV, DATECONV-WS, DATECONV-PD</div>
+      </div>
+    </div>
+
+    <!-- Risk 2 -->
+    <div class="risk-card" onclick="this.classList.toggle('expanded')">
+      <div class="row1"><span class="num">Risk 2</span><span class="sev high">High</span></div>
+      <h4>Binary&harr;display JV-NUMBER conversion</h4>
+      <p>JV-NUMBER stored as USAGE BINARY inside JV-CONTROL-REC; the persisted CHAR(400) column uses display form.</p>
+      <div class="risk-detail">
+        <div class="field"><div class="field-label">Evidence</div><code>JV-CONTROL-REC.cpy:6</code>, <code>CONTROL-RECORD-TABLE-IO.pco:21-28, 257-266</code></div>
+        <div class="field"><div class="field-label">Mitigation</div>Java reads CONTROL_RECORD_DATA as display string, slices JV-NUMBER at offset [24:30], parses as zoned decimal. Never crosses DB boundary in binary form.</div>
+        <div class="field"><div class="field-label">SME Action</div>Confirm no caller depends on the in-memory binary representation outside CONTROL-RECORD-TABLE-IO.</div>
+        <div class="field"><div class="field-label">Affected Components</div>LABA05, CONTROL-RECORD-TABLE-IO, JV-CONTROL-REC</div>
+      </div>
+    </div>
+
+    <!-- Risk 3 -->
+    <div class="risk-card" onclick="this.classList.toggle('expanded')">
+      <div class="row1"><span class="num">Risk 3</span><span class="sev high">High</span></div>
+      <h4>Credential files /tst/.oralogin, /tst/.orapasswd</h4>
+      <p>Legacy program reads plain-text credentials from filesystem. Security risk &mdash; must not be reproduced.</p>
+      <div class="risk-detail">
+        <div class="field"><div class="field-label">Evidence</div><code>DBIO.pco:33-38</code> (file SELECTs), <code>DBIO.pco:41-45</code> (USRID-REC, PASSWD-REC)</div>
+        <div class="field"><div class="field-label">Mitigation</div>Java uses environment variables or managed secrets store (e.g., AWS Secrets Manager / HashiCorp Vault). No credentials in committed files.</div>
+        <div class="field"><div class="field-label">Affected Components</div>DBIO, LABA05.pl, LABD20-JV.pl</div>
+      </div>
+    </div>
+
+    <!-- Risk 4 -->
+    <div class="risk-card" onclick="this.classList.toggle('expanded')">
+      <div class="row1"><span class="num">Risk 4</span><span class="sev med">Medium</span></div>
+      <h4>Dynamic subroutine dispatch in DBIO</h4>
+      <p>DBIO constructs IO-module names at runtime by string concatenation.</p>
+      <div class="risk-detail">
+        <div class="field"><div class="field-label">Evidence</div><code>DBIO.pco:228-260</code> (STRING loop), <code>DBIO.pco:311-320</code> (CALL IO-SUBROUTINE)</div>
+        <div class="field"><div class="field-label">Mitigation</div>Two static paths documented: JV-CONTROL-REC &rarr; CONTROL-RECORD-TABLE-IO; embedded SQL for LABD20. Java uses typed dispatch with <code>UnresolvedDispatchPathError</code> for unknown targets.</div>
+        <div class="field"><div class="field-label">Affected Components</div>DBIO, CONTROL-RECORD-TABLE-IO</div>
+      </div>
+    </div>
+
+    <!-- Risk 5 -->
+    <div class="risk-card" onclick="this.classList.toggle('expanded')">
+      <div class="row1"><span class="num">Risk 5</span><span class="sev high">High</span></div>
+      <h4>Fixed-width record layout byte precision</h4>
+      <p>Off-by-one in TST123-COMMENT-REC parsing produces silently wrong field values. Approver width: 14 vs 20 bytes ambiguity.</p>
+      <div class="risk-detail">
+        <div class="field"><div class="field-label">Evidence</div><code>LABD20.pco:43-55</code> (FD layout, line 55 active=14, line 54 commented=20)</div>
+        <div class="field"><div class="field-label">Mitigation</div>Java parser uses explicit byte offsets per FD (14-byte approver). Total record = 300 bytes. Unit tests assert each byte boundary.</div>
+        <div class="field"><div class="field-label">Affected Components</div>LABD20</div>
+      </div>
+    </div>
+
+    <!-- Risk 6 -->
+    <div class="risk-card" onclick="this.classList.toggle('expanded')">
+      <div class="row1"><span class="num">Risk 6</span><span class="sev med">Medium</span></div>
+      <h4>SQLCODE &rarr; DMS return-code translation</h4>
+      <p>Callers check ERROR-NUM (DMS 4-char code), not raw SQLCODE. Translation must be preserved exactly.</p>
+      <div class="risk-detail">
+        <div class="field"><div class="field-label">Evidence</div><code>DBIO.pco:374-398</code> (5300-TRANSLATE-SQLCODE)</div>
+        <div class="field"><div class="field-label">Mitigation</div>Translation table ported verbatim. Each branch has a test case. See section 7c above.</div>
+        <div class="field"><div class="field-label">Affected Components</div>DBIO, LABA05, LABD20</div>
+      </div>
+    </div>
+
+    <!-- Risk 7 -->
+    <div class="risk-card" onclick="this.classList.toggle('expanded')">
+      <div class="row1"><span class="num">Risk 7</span><span class="sev med">Medium</span></div>
+      <h4>Transaction rollback paths</h4>
+      <p>Multiple error paths across LABD20 and LABA05 requiring consistent rollback behavior.</p>
+      <div class="risk-detail">
+        <div class="field"><div class="field-label">Evidence</div><code>LABD20.pco:331,373,402,414,424,434,444,489+</code>; <code>LABA05.cbl:171,196,207+</code></div>
+        <div class="field"><div class="field-label">Mitigation</div>Java centralizes rollback in DbDispatcher. Both SQL and DMS errors funnel through try-with-resources + rollback in catch.</div>
+        <div class="field"><div class="field-label">Affected Components</div>LABD20, LABA05, DBIO</div>
+      </div>
+    </div>
+
+    <!-- Risk 8 -->
+    <div class="risk-card" onclick="this.classList.toggle('expanded')">
+      <div class="row1"><span class="num">Risk 8</span><span class="sev med">Medium</span></div>
+      <h4>EXTERNAL shared data items</h4>
+      <p>JV-CONTROL-REC and CONTROL-RECORD-TABLE declared EXTERNAL &mdash; shared memory between caller and IO module.</p>
+      <div class="risk-detail">
+        <div class="field"><div class="field-label">Evidence</div><code>JV-CONTROL-REC.cpy:1</code>, <code>CONTROL-RECORD-TABLE.cpy:24</code></div>
+        <div class="field"><div class="field-label">Mitigation</div>Java passes record objects by reference between reset/loader and DbDispatcher to mirror EXTERNAL semantics.</div>
+        <div class="field"><div class="field-label">Affected Components</div>JV-CONTROL-REC, CONTROL-RECORD-TABLE, CONTROL-RECORD-TABLE-IO</div>
+      </div>
+    </div>
+
+    <!-- Risk 9 -->
+    <div class="risk-card" onclick="this.classList.toggle('expanded')">
+      <div class="row1"><span class="num">Risk 9</span><span class="sev med">Medium</span></div>
+      <h4>Empty / missing real test data</h4>
+      <p>TST.JVCMTS.dat is effectively empty in the supplied repo &mdash; no real records to test against.</p>
+      <div class="risk-detail">
+        <div class="field"><div class="field-label">Mitigation</div>21 synthetic 300-byte records covering happy path, every validation-failure case, and duplicate detection. No real customer data committed.</div>
+        <div class="field"><div class="field-label">Affected Components</div>LABD20, test-data/</div>
+      </div>
+    </div>
+
+    <!-- Risk 10 -->
+    <div class="risk-card" onclick="this.classList.toggle('expanded')">
+      <div class="row1"><span class="num">Risk 10</span><span class="sev med">Medium</span></div>
+      <h4>Perl wrapper environment dependencies</h4>
+      <p>LABA05.pl and LABD20-JV.pl rely on rtsora runtime + many environment variables.</p>
+      <div class="risk-detail">
+        <div class="field"><div class="field-label">Evidence</div><code>source/perl/LABA05.pl</code>, <code>source/perl/LABD20-JV.pl</code></div>
+        <div class="field"><div class="field-label">Mitigation</div>Java entrypoints accept configuration objects. Modern orchestration (Spring Boot, Kubernetes) replaces Perl wrappers.</div>
+        <div class="field"><div class="field-label">SME Action</div>Provide canonical env-var list for production orchestration migration.</div>
+      </div>
+    </div>
+
+    <!-- Risk 11 -->
+    <div class="risk-card" onclick="this.classList.toggle('expanded')">
+      <div class="row1"><span class="num">Risk 11</span><span class="sev low">Low</span></div>
+      <h4>PERFORM PERFORM typo</h4>
+      <p>Likely benign &mdash; second PERFORM interpreted as paragraph name. Should be confirmed by SME.</p>
+      <div class="risk-detail">
+        <div class="field"><div class="field-label">Evidence</div><code>LABD20.pco:213</code> &mdash; <code>PERFORM PERFORM CLOSE-SQL-ENVIRONMENT.</code></div>
+        <div class="field"><div class="field-label">Mitigation</div>Java calls <code>closeSqlEnvironment()</code> once. Flagged for SME confirmation.</div>
+        <div class="field"><div class="field-label">Affected Components</div>LABD20</div>
+      </div>
+    </div>
+
+    <!-- Risk 12 -->
+    <div class="risk-card" onclick="this.classList.toggle('expanded')">
+      <div class="row1"><span class="num">Risk 12</span><span class="sev med">Medium</span></div>
+      <h4>Schema drift between modernized output and Oracle tables</h4>
+      <p>Automated parity test compares demo schema, live loader INSERT, and table describes. Known width mismatches documented.</p>
+      <div class="risk-detail">
+        <div class="field"><div class="field-label">Evidence</div><code>database/descriptions/describe *.txt</code>, <code>db_dispatcher.py:330-416</code></div>
+        <div class="field"><div class="field-label">Mitigation</div>16-test schema parity suite. Known issues: APPROVER 14&harr;20 width (U-5), JC_COUNT_TBL PK typo (A-6/U-6), column-name drift. Annotated as known-issues; new drift fails the suite.</div>
+        <div class="field"><div class="field-label">Affected Components</div>All Oracle tables, db_dispatcher.py, labd20_loader.py</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 9: Business Requirements Traceability                 -->
+<!-- ============================================================ -->
+<section id="requirements">
+  <h2>Business Requirements Traceability</h2>
+  <h3>30 requirements with source citations</h3>
+
+  <div class="tab-group">
+    <button class="tab-btn active" onclick="switchTab('laba05-reqs', this)">LABA05 (6 requirements)</button>
+    <button class="tab-btn" onclick="switchTab('labd20-reqs', this)">LABD20 (22 requirements)</button>
+  </div>
+
+  <!-- LABA05 Requirements -->
+  <div class="tab-panel active" id="laba05-reqs">
+    <div class="overflow-x">
+    <table class="t">
+      <thead><tr><th>ID</th><th>Requirement</th><th>Source Lines</th><th>Java Method</th><th>Test Method</th><th>Confidence</th></tr></thead>
+      <tbody>
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABA05-001</td><td>Connect to Oracle via DBIO; abort with RETURN-CODE=99 on failure</td><td class="font-mono text-xs">LABA05.cbl:69-85</td><td class="font-mono text-xs">run() setup</td><td class="font-mono text-xs">testResetSucceeds</td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="6">Source: <code>source/cobol/LABA05.cbl:69-85</code>; <code>source/procobol/DBIO.pco:188-215</code>. Confirmed from source.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABA05-002</td><td>SELECT JV-CONTROL-REC row by NAME='JV-CONTROL-REC' AND NUMBER=1</td><td class="font-mono text-xs">LABA05.cbl:152-174</td><td class="font-mono text-xs">fetchControlRecord()</td><td class="font-mono text-xs">testResetSucceeds</td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="6">Source: <code>LABA05.cbl:152-174</code> (FETCH-CTRL-REC). Table shape from <code>database/descriptions/describe CONTROL_RECORD_TABLE.txt</code>.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABA05-003</td><td>Display JV-NUMBER read from CONTROL_RECORD_DATA prior to mutation</td><td class="font-mono text-xs">LABA05.cbl:176-205</td><td class="font-mono text-xs">displayRecord()</td><td class="font-mono text-xs">testResetSucceeds</td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="6">Source: MODIFY-CTRL-REC paragraph, DISPLAY of JV-NUMBER OF JV-CONTROL-REC.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABA05-004</td><td>Set JV-NUMBER = 1 and UPDATE the row in place</td><td class="font-mono text-xs">LABA05.cbl:184-205</td><td class="font-mono text-xs">modifyControlRecord()</td><td class="font-mono text-xs">testResetSucceeds</td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="6">Source: <code>LABA05.cbl:184-189</code> (MOVE 1 TO JV-NUMBER), <code>:190-205</code> (UPDATE via DBIO 1300).</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABA05-005</td><td>COMMIT on success, ROLLBACK + return code 99 on any DBIO non-zero</td><td class="font-mono text-xs">LABA05.cbl various</td><td class="font-mono text-xs">run() + commit/rollback</td><td class="font-mono text-xs">testReturns99*</td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="6">Source: PROGRAM-EXIT / error fall-throughs; <code>DBIO.pco:374-398</code> (DMS translation).</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABA05-006</td><td>JV-NUMBER at fixed byte offset in 400-byte blob; binary&harr;display conversion</td><td class="font-mono text-xs">JV-CONTROL-REC.cpy:1-12</td><td class="font-mono text-xs">JvControlRecord.fromBlob()</td><td class="font-mono text-xs">testSliceIs24To30</td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span> / <span class="sev med">MED</span></td></tr>
+        <tr class="detail-row"><td colspan="6">Source: <code>JV-CONTROL-REC.cpy:1-12</code>; <code>CONTROL-RECORD-TABLE-IO.pco:21-28, 257-266</code>. Layout HIGH confidence; exact byte offset MEDIUM (depends on caller REDEFINES).</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- LABD20 Requirements -->
+  <div class="tab-panel" id="labd20-reqs">
+    <div class="overflow-x">
+    <table class="t">
+      <thead><tr><th>ID</th><th>Requirement</th><th>Source Lines</th><th>Status</th><th>Confidence</th></tr></thead>
+      <tbody>
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-001</td><td>Process date from CARDFILE as MM/DD/CCYY &rarr; YYYYMMDD</td><td class="font-mono text-xs">LABD20.pco:224-234</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">Source: LABD20-HOUSE-KEEPING, MOVE WS-PARM-MM/-DD/-CC/-YY to WS-PROCESS-DATE.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-002</td><td>Fixed-width 300-byte record layout (8+6+2+10+10+230+20+14)</td><td class="font-mono text-xs">LABD20.pco:43-55</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">Active line 55 = 14-byte APPROVER. Total = 300 bytes. See Risk 5.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-003</td><td>First 26 bytes = composite JC_SUBMITTED primary key</td><td class="font-mono text-xs">LABD20.pco:44-49, 329</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">REDEFINES TST123-LOAN-DT-NR into date(8)+JV(6)+section(2)+loan(10). Used as WHERE clause key.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-004</td><td>Reject all-spaces record</td><td class="font-mono text-xs">LABD20.pco:261-263</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">DETERMINE-COMMENT-DISPOSITION: IF TST123-COMMENT-REC = SPACES.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-005</td><td>Reject non-numeric comment date</td><td class="font-mono text-xs">LABD20.pco:265, 272-274</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">IF TST123-COMMENT-DT IS NOT NUMERIC.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-006</td><td>Reject invalid calendar date via CHECK-CYMD-DT</td><td class="font-mono text-xs">LABD20.pco:266-274</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">Resolved 2026-05-21: DATECONV-PD supplied. Faithful port at dateconv.py; GnuCOBOL parity verified.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-007</td><td>Reject non-numeric or &le;0 JV-NUMBER</td><td class="font-mono text-xs">LABD20.pco:276-281</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">TST123-JV-NUMBER must be numeric AND > 0.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-008</td><td>Reject non-numeric section ID</td><td class="font-mono text-xs">LABD20.pco:283-287</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">TST123-SECTION-ID must be numeric.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-009</td><td>Reject non-numeric loan number</td><td class="font-mono text-xs">LABD20.pco:289-293</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">TST123-LOAN-NUMBER must be numeric.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-010</td><td>Comment text must not be blank (schedule-doc-no NOT validated)</td><td class="font-mono text-xs">LABD20.pco:297-299</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">TST123-COMMENT-TEXT must not be blank. Schedule-doc-no explicitly not validated per source comment.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-011</td><td>Requestor must not be blank</td><td class="font-mono text-xs">LABD20.pco:301-303</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">TST123-COMMENT-REQUESTOR must not be blank.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-012</td><td>Approver must not be blank</td><td class="font-mono text-xs">LABD20.pco:305-307</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">TST123-COMMENT-APPROVER must not be blank.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-013</td><td>Duplicate check before insert (SQLCODE=0 &rarr; dup, 100 &rarr; safe)</td><td class="font-mono text-xs">LABD20.pco:317-339</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">DETERMINE-IF-DUPLICATE: SELECT from JC_SUBMITTED_COMMENT_TBL WHERE JC_SUBMITTED = :key.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-014</td><td>INSERT into JC_SUBMITTED_COMMENT_TBL (9 columns)</td><td class="font-mono text-xs">LABD20.pco:342-372</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">CREATE-COMMENT-RECORD: 9 columns including TO_DATE(:WS-PROCESS-DATE,'YYYYMMDD').</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-015</td><td>Maintain per-batch counter WS-JV-COUNTER</td><td class="font-mono text-xs">LABD20.pco:345</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">Incremented on each successful insert.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-016</td><td>UPDATE JC_COUNT_TBL if counter exceeds threshold</td><td class="font-mono text-xs">LABD20.pco:392-405</td><td><span class="status planned">Planned</span></td><td><span class="sev med">MED</span></td></tr>
+        <tr class="detail-row"><td colspan="5">POST-PROCESS: UPDATE WHERE JC_SECTION = 'MA'. Origin of WS-JV-COUNTERS threshold not visible in supplied source.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-017</td><td>COMMIT after post-process; emit COUNT(*) stats</td><td class="font-mono text-xs">LABD20.pco:408-446</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">CLOSE-SQL-ENVIRONMENT: COMMIT WORK, then COUNT(*) from submitted, rejected, applied tables.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-018</td><td>Truncate COMMENT-FILE after processing</td><td class="font-mono text-xs">LABD20.pco:215-218</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">OPEN OUTPUT + immediate CLOSE to truncate so next run doesn't re-process.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-019</td><td>ROLLBACK + return code 99 on any non-zero SQLCODE</td><td class="font-mono text-xs">LABD20.pco:489+</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">9999-ROLL-BACK paragraph. Multiple GO TO paths at lines 332, 374, 403, 414, 424, 434, 444.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-020</td><td>Rejected records counted but no INSERT path visible</td><td class="font-mono text-xs">LABD20.pco:309-314</td><td><span class="status planned">Planned</span></td><td><span class="sev low">LOW</span></td></tr>
+        <tr class="detail-row"><td colspan="5">JC_REJECTED_COMMENT_TBL only read via COUNT(*). Insert likely lives in another program. SME confirmation needed.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-021</td><td>Construct 8-char WS-CONTROL-NUM = JV-NUMBER(6) + SECTION-ID(2)</td><td class="font-mono text-xs">LABD20.pco:160-165</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">REDEFINES working storage; written to JC_SUBMITTED_CONTROL_NUM column.</td></tr>
+
+        <tr class="expandable-row" onclick="toggleRow(this)"><td class="font-mono">BR-LABD20-022</td><td>Preserve 240-byte COMMENT-HIST = schedule-doc-no(10) + comment-text(230)</td><td class="font-mono text-xs">LABD20.pco:50-52, 366</td><td><span class="status planned">Planned</span></td><td><span class="sev" style="background:var(--ok-bg);color:var(--ok-ink)">HIGH</span></td></tr>
+        <tr class="detail-row"><td colspan="5">Composite field written verbatim to JC_SUBMITTED_COMMENT_HIST CHAR(240).</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 10: Effort & Progress Metrics                         -->
+<!-- ============================================================ -->
+<section id="effort-metrics">
+  <h2>Effort &amp; Progress Metrics</h2>
+  <h3>Code volume and confidence</h3>
+
+  <div class="grid-2">
+    <!-- Code Volume Chart -->
+    <div>
+      <h4 class="text-sm" style="font-weight:600;margin-bottom:12px;">Code volume</h4>
+      <div class="bar-chart">
+        <div class="bar-row">
+          <div class="bar-label">COBOL analyzed</div>
+          <div class="bar-track"><div class="bar-fill gray" style="width:100%"></div></div>
+          <div class="bar-value">~2,800</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Python generated</div>
+          <div class="bar-track"><div class="bar-fill green" style="width:59%"></div></div>
+          <div class="bar-value">~1,640</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Java generated</div>
+          <div class="bar-track"><div class="bar-fill amber" style="width:8%"></div></div>
+          <div class="bar-value">In Progress</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confidence Distribution -->
+    <div>
+      <h4 class="text-sm" style="font-weight:600;margin-bottom:12px;">Confidence distribution (30 requirements)</h4>
+      <div class="bar-chart">
+        <div class="bar-row">
+          <div class="bar-label">HIGH</div>
+          <div class="bar-track"><div class="bar-fill green" style="width:77%"></div></div>
+          <div class="bar-value">23 (77%)</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">MEDIUM</div>
+          <div class="bar-track"><div class="bar-fill amber" style="width:10%"></div></div>
+          <div class="bar-value">3 (10%)</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">LOW / Unresolvable</div>
+          <div class="bar-track"><div class="bar-fill red" style="width:13%"></div></div>
+          <div class="bar-value">4 (13%)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2 mt-24">
+    <!-- Test Coverage -->
+    <div>
+      <h4 class="text-sm" style="font-weight:600;margin-bottom:12px;">Test coverage</h4>
+      <div class="bar-chart">
+        <div class="bar-row">
+          <div class="bar-label">Python tests passing</div>
+          <div class="bar-track"><div class="bar-fill green" style="width:100%"></div></div>
+          <div class="bar-value">52</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Java tests (JUnit 5)</div>
+          <div class="bar-track"><div class="bar-fill amber" style="width:17%"></div></div>
+          <div class="bar-value">9 planned</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Effort Breakdown -->
+    <div>
+      <h4 class="text-sm" style="font-weight:600;margin-bottom:12px;">Devin-covered vs residual SME effort</h4>
+      <div class="bar-chart">
+        <div class="bar-row">
+          <div class="bar-label">Source ingestion</div>
+          <div class="bar-track"><div class="bar-fill green" style="width:100%"></div></div>
+          <div class="bar-value">100%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Requirements</div>
+          <div class="bar-track"><div class="bar-fill green" style="width:90%"></div></div>
+          <div class="bar-value">90%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Dependency graph</div>
+          <div class="bar-track"><div class="bar-fill green" style="width:95%"></div></div>
+          <div class="bar-value">95%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">SQL extraction</div>
+          <div class="bar-track"><div class="bar-fill green" style="width:100%"></div></div>
+          <div class="bar-value">100%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Code conversion</div>
+          <div class="bar-track"><div class="bar-fill green" style="width:95%"></div></div>
+          <div class="bar-value">&gt;95%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Test generation</div>
+          <div class="bar-track"><div class="bar-fill green" style="width:100%"></div></div>
+          <div class="bar-value">100%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 11: SME Review Queue                                  -->
+<!-- ============================================================ -->
+<section id="sme-queue">
+  <h2>SME Review Queue</h2>
+  <h3>10 items requiring human review</h3>
+
+  <div class="overflow-x">
+  <table class="t">
+    <thead><tr><th>#</th><th>Item</th><th>Severity</th><th>Risk / Assumption ID</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td><del>1</del></td><td><del>Confirm date-validation semantics (DATECONV-PD)</del></td><td><span class="sev closed">Closed</span></td><td>Risk 1, A-1</td><td>Resolved 2026-05-21</td></tr>
+      <tr><td>2</td><td>Confirm JV-NUMBER binary&harr;display conversion (struct.unpack form)</td><td><span class="sev high">High</span></td><td>Risk 2, A-3</td><td>Pending SME</td></tr>
+      <tr><td>3</td><td>Confirm origin of WS-JV-COUNTERS threshold</td><td><span class="sev med">Medium</span></td><td>A-10, BR-LABD20-UR-003</td><td>Pending SME</td></tr>
+      <tr><td>4</td><td>Confirm JC_COUNT_TBL column name (JC_SECTION_COUNT vs JC_COUNT_NUM)</td><td><span class="sev med">Medium</span></td><td>Risk 8</td><td>Pending SME</td></tr>
+      <tr><td>5</td><td>Confirm 20-byte APPROVER FD deprecation is intentional</td><td><span class="sev med">Medium</span></td><td>Risk 5</td><td>Pending SME</td></tr>
+      <tr><td>6</td><td>Confirm insert path for JC_REJECTED / JC_APPLIED tables</td><td><span class="sev low">Low</span></td><td>BR-LABD20-UR-004</td><td>Pending SME</td></tr>
+      <tr><td>7</td><td>Confirm full DBIO dispatch table</td><td><span class="sev med">Medium</span></td><td>Risk 4, A-9</td><td>Pending SME</td></tr>
+      <tr><td>8</td><td>Confirm Perl-wrapper env-var equivalents for orchestration</td><td><span class="sev low">Low</span></td><td>Risk 10</td><td>Pending SME</td></tr>
+      <tr><td>9</td><td>Confirm PERFORM PERFORM typo at LABD20.pco:213</td><td><span class="sev low">Low</span></td><td>Risk 11</td><td>Pending SME</td></tr>
+      <tr><td>10</td><td>Replace mock credentials with managed secrets store</td><td><span class="sev high">High</span></td><td>Risk 3</td><td>Pending SME</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 12: Footer                                            -->
+<!-- ============================================================ -->
+</div><!-- /.wrap -->
+
+<footer class="bottom">
+  <span class="wordmark">
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+      <polygon points="12,2 22,7 22,17 12,22 2,17 2,7" fill="currentColor"/>
+      <polygon points="12,6 18,9 18,15 12,18 6,15 6,9" fill="var(--paper)"/>
+      <polygon points="12,9 15,10.5 15,13.5 12,15 9,13.5 9,10.5" fill="currentColor"/>
+    </svg>
+    Generated by Cognition / Devin
+  </span>
+  <div class="links">
+    <a href="MIGRATION-PLAN.md">Migration Plan</a>
+    <a href="RISKS-AND-GAPS.md">Risks &amp; Gaps</a>
+    <a href="ASSUMPTIONS-AND-PLACEHOLDERS.md">Assumptions</a>
+    <a href="business-requirements/requirements-with-citations.md">Requirements</a>
+    <a href="docs/conversion-efficiency.md">Conversion Efficiency</a>
+  </div>
+  <p>STATUS: Demo output &mdash; pending SME review</p>
+</footer>
+
+<!-- ============================================================ -->
+<!-- JAVASCRIPT (vanilla, no frameworks)                           -->
+<!-- ============================================================ -->
+<script>
+// --- Theme toggle ---
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+}
+
+// --- Toggle expandable table rows ---
+function toggleRow(tr) {
+  const next = tr.nextElementSibling;
+  if (next && next.classList.contains('detail-row')) {
+    next.classList.toggle('open');
+  }
+}
+
+// --- Filter inventory table ---
+function filterTable(filter) {
+  const btns = document.querySelectorAll('.filters .filter-btn');
+  btns.forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  const rows = document.querySelectorAll('#inventory-table tbody tr.expandable-row');
+  rows.forEach(row => {
+    const type = row.getAttribute('data-type');
+    const status = row.getAttribute('data-status');
+    const detailRow = row.nextElementSibling;
+    let show = false;
+
+    if (filter === 'all') show = true;
+    else if (filter === 'in-progress') show = status === 'in-progress';
+    else if (filter === 'planned') show = status === 'planned';
+    else if (filter === 'done') show = status === 'done';
+    else show = type === filter;
+
+    row.style.display = show ? '' : 'none';
+    if (detailRow && detailRow.classList.contains('detail-row')) {
+      detailRow.style.display = show ? '' : 'none';
+      if (!show) detailRow.classList.remove('open');
+    }
+  });
+}
+
+// --- Sort table ---
+function sortTable(colIdx) {
+  const table = document.getElementById('inventory-table');
+  const tbody = table.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr.expandable-row'));
+
+  const asc = table.getAttribute('data-sort-col') == colIdx && table.getAttribute('data-sort-dir') === 'asc';
+  table.setAttribute('data-sort-col', colIdx);
+  table.setAttribute('data-sort-dir', asc ? 'desc' : 'asc');
+
+  rows.sort((a, b) => {
+    const aVal = a.cells[colIdx]?.textContent.trim() || '';
+    const bVal = b.cells[colIdx]?.textContent.trim() || '';
+    const aNum = parseInt(aVal.replace(/,/g, ''));
+    const bNum = parseInt(bVal.replace(/,/g, ''));
+    if (!isNaN(aNum) && !isNaN(bNum)) {
+      return asc ? bNum - aNum : aNum - bNum;
+    }
+    return asc ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
+  });
+
+  rows.forEach(row => {
+    const detail = row.nextElementSibling;
+    tbody.appendChild(row);
+    if (detail && detail.classList.contains('detail-row')) {
+      tbody.appendChild(detail);
+    }
+  });
+}
+
+// --- Tab switching ---
+function switchTab(panelId, btn) {
+  const group = btn.closest('section');
+  group.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  group.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(panelId).classList.add('active');
+}
+
+// --- Architecture detail panel ---
+const componentData = {
+  'laba05-pl': { name: 'LABA05.pl', path: 'source/perl/LABA05.pl', lines: 66, purpose: 'Environment setup script for LABA05. Sets ORACLE_HOME, LD_LIBRARY_PATH, etc. and invokes rtsora.', deps: 'LABA05.cbl', calledBy: 'Scheduler/cron', status: 'Planned', risks: 'Risk 10', reqs: '-', section: '#components' },
+  'labd20-pl': { name: 'LABD20-JV.pl', path: 'source/perl/LABD20-JV.pl', lines: 82, purpose: 'Environment setup and file-location script for LABD20. Invokes rtsora.', deps: 'LABD20.pco', calledBy: 'Scheduler/cron', status: 'Planned', risks: 'Risk 10', reqs: '-', section: '#components' },
+  'laba05': { name: 'LABA05.cbl', path: 'source/cobol/LABA05.cbl', lines: 285, purpose: 'Fiscal-year JV control reset. Resets JV-NUMBER to 1 on CONTROL_RECORD_TABLE.', deps: 'DBIO, JV-CONTROL-REC, DBVAR, DMCA, DMCAERR', calledBy: 'LABA05.pl', status: 'In Progress (Java 21)', risks: 'Risk 2, 7', reqs: 'BR-LABA05-001..006', section: '#current-pr' },
+  'labd20': { name: 'LABD20.pco', path: 'source/procobol/LABD20.pco', lines: 535, purpose: 'Daily JV comment ingestion. Reads COMMENT-FILE, validates, inserts into JC_SUBMITTED_COMMENT_TBL.', deps: 'DBIO, DATECONV, COMCON, DMCA, DATECONV-WS, DATECONV-PD', calledBy: 'LABD20-JV.pl', status: 'Planned', risks: 'Risk 1,5,7,11', reqs: 'BR-LABD20-001..022', section: '#requirements' },
+  'dateconv': { name: 'DATECONV.cbl', path: 'source/cobol/DATECONV.cbl', lines: 1159, purpose: '42-function date conversion subprogram. Dispatches on DATESUB-FUNC. Includes JDN computation and calendar validation.', deps: 'JDN-CONSTANTS-WS, JDN-PACKET-WS, JDN-RECORD-WS, JDN-RECORD-ACCESS', calledBy: 'LABD20 (via DATECONV-PD)', status: 'Planned', risks: 'Risk 1 (CLOSED)', reqs: 'BR-LABD20-006', section: '#risks' },
+  'dbio': { name: 'DBIO.pco', path: 'source/procobol/DBIO.pco', lines: 407, purpose: 'Oracle connection/transaction dispatcher. SQLCODE-to-DMS translation. Dynamic subroutine dispatch.', deps: 'CONTROL-RECORD-TABLE-IO, RDMS-ERR-WS, RDMS-ERR-RTN, /tst/.oralogin, /tst/.orapasswd', calledBy: 'LABA05, LABD20', status: 'Planned', risks: 'Risk 3,4,6', reqs: '-', section: '#current-pr' },
+  'crtio': { name: 'CONTROL-RECORD-TABLE-IO.pco', path: 'source/procobol/CONTROL-RECORD-TABLE-IO.pco', lines: 406, purpose: 'Table-specific CRUD for CONTROL_RECORD_TABLE. Binary/display conversion. Dynamic WHERE via PREPARE.', deps: 'CONTROL-RECORD-TABLE, JV-CONTROL-REC', calledBy: 'DBIO', status: 'Planned', risks: 'Risk 2,8', reqs: 'BR-LABA05-006', section: '#components' },
+  'comcon': { name: 'COMCON.cpy', path: 'source/copybooks/COMCON.cpy', lines: 26, purpose: 'Common constants copybook.', deps: '-', calledBy: 'LABD20', status: 'Planned', risks: '-', reqs: '-', section: '#components' },
+  'crt-cpy': { name: 'CONTROL-RECORD-TABLE.cpy', path: 'source/copybooks/CONTROL-RECORD-TABLE.cpy', lines: 30, purpose: 'EXTERNAL record layout for CONTROL_RECORD_TABLE.', deps: '-', calledBy: 'DBIO, CONTROL-RECORD-TABLE-IO', status: 'Planned', risks: '-', reqs: '-', section: '#components' },
+  'dateconv-pd': { name: 'DATECONV-PD.cpy', path: 'source/copybooks/DATECONV-PD.cpy', lines: 198, purpose: '42 entry paragraphs setting DATESUB-FUNC then CALL DATECONV. Supplied 2026-05-21.', deps: 'DATECONV', calledBy: 'LABD20', status: 'Planned', risks: 'Risk 1 (CLOSED)', reqs: 'BR-LABD20-006', section: '#risks' },
+  'dateconv-ws': { name: 'DATECONV-WS.cpy', path: 'source/copybooks/DATECONV-WS.cpy', lines: 126, purpose: 'Caller-side data contract for DATECONV. Supplied 2026-05-21.', deps: '-', calledBy: 'LABD20', status: 'Planned', risks: 'Risk 1 (CLOSED)', reqs: '-', section: '#components' },
+  'dbvar': { name: 'DBVAR.cpy', path: 'source/copybooks/DBVAR.cpy', lines: 25, purpose: 'Database variable declarations for DBIO.', deps: '-', calledBy: 'LABA05', status: 'Planned', risks: '-', reqs: '-', section: '#components' },
+  'dmca': { name: 'DMCA.cpy', path: 'source/copybooks/DMCA.cpy', lines: 118, purpose: 'DMS common area declarations.', deps: '-', calledBy: 'LABA05, DBIO', status: 'Planned', risks: '-', reqs: '-', section: '#components' },
+  'dmcaerr': { name: 'DMCAERR.cpy', path: 'source/copybooks/DMCAERR.cpy', lines: 58, purpose: 'DMS error handling and error code definitions.', deps: '-', calledBy: 'LABA05', status: 'Planned', risks: '-', reqs: '-', section: '#components' },
+  'jdn-const': { name: 'JDN-CONSTANTS-WS.cpy', path: 'source/copybooks/JDN-CONSTANTS-WS.cpy', lines: 126, purpose: 'Julian Day Number constants. Internal to DATECONV.', deps: '-', calledBy: 'DATECONV', status: 'Planned', risks: '-', reqs: '-', section: '#components' },
+  'jdn-packet': { name: 'JDN-PACKET-WS.cpy', path: 'source/copybooks/JDN-PACKET-WS.cpy', lines: 94, purpose: 'JDN packet working storage. Internal to DATECONV.', deps: '-', calledBy: 'DATECONV', status: 'Planned', risks: '-', reqs: '-', section: '#components' },
+  'jdn-access': { name: 'JDN-RECORD-ACCESS.cpy', path: 'source/copybooks/JDN-RECORD-ACCESS.cpy', lines: 167, purpose: 'Intrinsic-function-based JDN record access.', deps: '-', calledBy: 'DATECONV', status: 'Planned', risks: '-', reqs: '-', section: '#components' },
+  'jdn-record': { name: 'JDN-RECORD-WS.cpy', path: 'source/copybooks/JDN-RECORD-WS.cpy', lines: 122, purpose: 'JDN record working storage. Internal to DATECONV.', deps: '-', calledBy: 'DATECONV', status: 'Planned', risks: '-', reqs: '-', section: '#components' },
+  'jv-ctrl-rec': { name: 'JV-CONTROL-REC.cpy', path: 'source/copybooks/JV-CONTROL-REC.cpy', lines: 12, purpose: 'EXTERNAL record layout for 400-byte CONTROL_RECORD_DATA blob. Contains JV-NUMBER at USAGE BINARY.', deps: '-', calledBy: 'LABA05, CONTROL-RECORD-TABLE-IO, LABD20', status: 'In Progress', risks: 'Risk 2', reqs: 'BR-LABA05-006', section: '#current-pr' },
+  'rdms-err-rtn': { name: 'RDMS-ERR-RTN.cpy', path: 'source/copybooks/RDMS-ERR-RTN.cpy', lines: 40, purpose: 'Error return routine for RDMS/DMS.', deps: '-', calledBy: 'DBIO', status: 'Planned', risks: '-', reqs: '-', section: '#components' },
+  'rdms-err-ws': { name: 'RDMS-ERR-WS.cpy', path: 'source/copybooks/RDMS-ERR-WS.cpy', lines: 20, purpose: 'Error working storage for RDMS.', deps: '-', calledBy: 'DBIO', status: 'Planned', risks: '-', reqs: '-', section: '#components' },
+  'comment-file': { name: 'COMMENT-FILE', path: 'TST.JVCMTS.dat', lines: '-', purpose: 'Input file containing 300-byte fixed-width JV comment records.', deps: '-', calledBy: 'LABD20', status: 'Planned', risks: '-', reqs: 'BR-LABD20-002', section: '#requirements' },
+  'cardfile': { name: 'CARDFILE', path: 'Process date control file', lines: '-', purpose: 'Single-line file containing process date as MM/DD/CCYY.', deps: '-', calledBy: 'LABD20', status: 'Planned', risks: '-', reqs: 'BR-LABD20-001', section: '#requirements' },
+  'oralogin': { name: '/tst/.oralogin', path: '/tst/.oralogin', lines: '-', purpose: 'Legacy credential file containing Oracle username. SECURITY RISK.', deps: '-', calledBy: 'DBIO', status: 'Must Replace', risks: 'Risk 3', reqs: '-', section: '#risks' },
+  'orapasswd': { name: '/tst/.orapasswd', path: '/tst/.orapasswd', lines: '-', purpose: 'Legacy credential file containing Oracle password. SECURITY RISK.', deps: '-', calledBy: 'DBIO', status: 'Must Replace', risks: 'Risk 3', reqs: '-', section: '#risks' },
+  'tbl-crt': { name: 'CONTROL_RECORD_TABLE', path: 'database/descriptions/describe CONTROL_RECORD_TABLE.txt', lines: '-', purpose: 'Generic key/value control records. CHAR(400) opaque blob. PK: (NAME, NUMBER).', deps: '-', calledBy: 'CONTROL-RECORD-TABLE-IO', status: 'Planned', risks: 'Risk 2', reqs: 'BR-LABA05-002,006', section: '#current-pr' },
+  'tbl-submit': { name: 'JC_SUBMITTED_COMMENT_TBL', path: 'database/descriptions/describe JC_SUBMITTED_COMMENT_TBL.txt', lines: '-', purpose: 'Submitted JV comments. 9 columns + timestamps. PK: JC_SUBMITTED CHAR(26).', deps: '-', calledBy: 'LABD20', status: 'Planned', risks: '-', reqs: 'BR-LABD20-013,014', section: '#requirements' },
+  'tbl-reject': { name: 'JC_REJECTED_COMMENT_TBL', path: 'database/descriptions/describe JC_REJECTED_COMMENT_TBL.txt', lines: '-', purpose: 'Rejected JV comments. Only COUNT(*) reference in supplied source. Insert lives elsewhere.', deps: '-', calledBy: 'LABD20 (COUNT only)', status: 'Planned', risks: '-', reqs: 'BR-LABD20-020', section: '#requirements' },
+  'tbl-applied': { name: 'JC_APPLIED_COMMENT_TBL', path: 'database/descriptions/describe JC_APPLIED_COMMENT_TBL.txt', lines: '-', purpose: 'Applied JV comments. Only COUNT(*) reference in supplied source.', deps: '-', calledBy: 'LABD20 (COUNT only)', status: 'Planned', risks: '-', reqs: '-', section: '#components' },
+  'tbl-count': { name: 'JC_COUNT_TBL', path: 'database/descriptions/describe JC_COUNT_TBL.txt', lines: '-', purpose: 'Section comment counts. Actual PK: JC_SECTION. Describe file claims PK is JC_SUBMITTED (typo).', deps: '-', calledBy: 'LABD20', status: 'Planned', risks: 'Risk 8 (PK typo)', reqs: 'BR-LABD20-016', section: '#sme-queue' },
+};
+
+function showDetail(el) {
+  // Remove active class from all boxes
+  document.querySelectorAll('.arch-box').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+
+  const key = el.getAttribute('data-component');
+  const d = componentData[key];
+  if (!d) return;
+
+  const panel = document.getElementById('arch-detail');
+  panel.innerHTML = `
+    <h4>${d.name}</h4>
+    <div class="detail-grid">
+      <div class="dl">Path</div><div class="dd font-mono">${d.path}</div>
+      <div class="dl">Lines</div><div class="dd">${d.lines}</div>
+      <div class="dl">Purpose</div><div class="dd">${d.purpose}</div>
+      <div class="dl">Dependencies</div><div class="dd">${d.deps}</div>
+      <div class="dl">Called By</div><div class="dd">${d.calledBy}</div>
+      <div class="dl">Status</div><div class="dd">${d.status}</div>
+      <div class="dl">Risks</div><div class="dd">${d.risks}</div>
+      <div class="dl">Requirements</div><div class="dd">${d.reqs}</div>
+    </div>
+    <div style="margin-top:12px"><a href="${d.section}">Jump to section &rarr;</a></div>
+  `;
+  panel.classList.add('visible');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+</script>
+
+</body>
+</html>
